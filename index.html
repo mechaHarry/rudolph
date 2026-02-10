@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cisco Insight Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- ── Header with inline KPIs ────────────────────── -->
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 48 48" fill="none">
+      <rect width="48" height="48" rx="10" fill="#049fd9"/>
+      <g fill="#fff">
+        <rect x="8"  y="24" width="3" height="10" rx="1.5"/>
+        <rect x="14" y="18" width="3" height="16" rx="1.5"/>
+        <rect x="20" y="14" width="3" height="20" rx="1.5"/>
+        <rect x="26" y="14" width="3" height="20" rx="1.5"/>
+        <rect x="32" y="18" width="3" height="16" rx="1.5"/>
+        <rect x="38" y="24" width="3" height="10" rx="1.5"/>
+      </g>
+    </svg>
+    <h1>Cisco Insight</h1>
+  </div>
+
+  <div class="hdr-kpi">
+    <span class="hdr-kpi-label">Mkt Cap</span>
+    <span class="hdr-kpi-value" id="kpi-mcap">--</span>
+  </div>
+  <div class="hdr-kpi">
+    <span class="hdr-kpi-label">52w High</span>
+    <span class="hdr-kpi-value" id="kpi-high">--</span>
+  </div>
+  <div class="hdr-kpi">
+    <span class="hdr-kpi-label">52w Low</span>
+    <span class="hdr-kpi-value" id="kpi-low">--</span>
+  </div>
+  <div class="hdr-meta">
+    <span><span class="live-dot"></span>&nbsp; Live</span>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<!-- ── Dashboard: 3 columns, viewport-locked ──────── -->
+<main>
+
+  <!-- COL 1: CSCO Today (1-day intraday) -->
+  <div class="card" id="stock-card">
+    <div class="card-header">
+      <h2>CSCO &mdash; Today</h2>
+      <span class="badge" id="stock-badge">--</span>
+    </div>
+    <div class="stock-headline">
+      <span class="stock-price" id="stock-price">--</span>
+      <span class="stock-change" id="stock-change"></span>
+    </div>
+    <div class="chart-wrap">
+      <div class="loading-overlay" id="stock-loader">
+        <div class="spinner"></div> Loading&hellip;
+      </div>
+      <canvas id="stockChart"></canvas>
+    </div>
+  </div>
+
+  <!-- COL 2: CSCO 1 Month -->
+  <div class="card">
+    <div class="card-header">
+      <h2>CSCO &mdash; 1 Month</h2>
+      <span class="badge" style="background:rgba(0,188,235,.12);color:var(--accent);">1M</span>
+    </div>
+    <div class="chart-wrap">
+      <div class="loading-overlay" id="month-loader">
+        <div class="spinner"></div> Loading&hellip;
+      </div>
+      <canvas id="monthChart"></canvas>
+    </div>
+  </div>
+
+  <!-- COL 3: CSCO 1 Year -->
+  <div class="card">
+    <div class="card-header">
+      <h2>CSCO &mdash; 1 Year</h2>
+      <span class="badge" style="background:rgba(0,188,235,.12);color:var(--accent);">1Y</span>
+    </div>
+    <div class="chart-wrap">
+      <div class="loading-overlay" id="year-loader">
+        <div class="spinner"></div> Loading&hellip;
+      </div>
+      <canvas id="yearChart"></canvas>
+    </div>
+  </div>
+
+  <!-- COL 4: CSCO All-Time -->
+  <div class="card">
+    <div class="card-header">
+      <h2>CSCO &mdash; All-Time</h2>
+      <span class="badge" style="background:rgba(0,188,235,.12);color:var(--accent);">Max</span>
+    </div>
+    <div class="chart-wrap">
+      <div class="loading-overlay" id="alltime-loader">
+        <div class="spinner"></div> Loading&hellip;
+      </div>
+      <canvas id="alltimeChart"></canvas>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Stock: Yahoo Finance &bull; Auto-refreshes every 60s
+</footer>
+
+<script src="js/chart.umd.min.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
