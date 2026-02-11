@@ -37,6 +37,14 @@
     <span class="hdr-kpi-label">52w Low</span>
     <span class="hdr-kpi-value" id="kpi-low">--</span>
   </div>
+  <div class="hdr-refresh">
+    <span class="hdr-kpi-label">Refresh</span>
+    <div class="refresh-btns" id="refresh-btns">
+      <button data-interval="1000" class="refresh-btn">1s</button>
+      <button data-interval="5000" class="refresh-btn">5s</button>
+      <button data-interval="30000" class="refresh-btn active">30s</button>
+    </div>
+  </div>
   <div class="hdr-meta">
     <span><span class="live-dot"></span>&nbsp; Live</span>
     <span id="clock"></span>
@@ -109,7 +117,7 @@
 </main>
 
 <footer>
-  Stock: Yahoo Finance &bull; Auto-refreshes every 60s
+  Stock: Yahoo Finance &bull; Auto-refreshes at selected interval
 </footer>
 
 <script src="js/chart.umd.min.js"></script>

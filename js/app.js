@@ -250,9 +250,49 @@ function fetchAllRanges() {
   ranges.forEach(function(cfg) { fetchRange(cfg); });
 }
 
+// ─── Refresh Interval Setting ────────────────────────
+var refreshTimerStock = null;
+var refreshTimerRanges = null;
+
+function getRefreshInterval() {
+  var saved = localStorage.getItem('insight-refresh');
+  return saved ? parseInt(saved, 10) : 30000;
+}
+
+function setRefreshInterval(ms) {
+  localStorage.setItem('insight-refresh', ms);
+  startTimers(ms);
+  // Update button states
+  var btns = document.querySelectorAll('.refresh-btn');
+  btns.forEach(function(btn) {
+    btn.classList.toggle('active', parseInt(btn.getAttribute('data-interval'), 10) === ms);
+  });
+}
+
+function startTimers(ms) {
+  if (refreshTimerStock) clearInterval(refreshTimerStock);
+  if (refreshTimerRanges) clearInterval(refreshTimerRanges);
+  refreshTimerStock = setInterval(fetchStockWithFallback, ms);
+  // Range charts refresh at 10x the interval (min 30s) since data changes less often
+  var rangeMs = Math.max(ms * 10, 30000);
+  refreshTimerRanges = setInterval(fetchAllRanges, rangeMs);
+}
+
+// Wire up buttons
+document.addEventListener('DOMContentLoaded', function() {
+  var savedMs = getRefreshInterval();
+  // Set initial active state
+  var btns = document.querySelectorAll('.refresh-btn');
+  btns.forEach(function(btn) {
+    var val = parseInt(btn.getAttribute('data-interval'), 10);
+    btn.classList.toggle('active', val === savedMs);
+    btn.addEventListener('click', function() {
+      setRefreshInterval(val);
+    });
+  });
+});
+
 // ─── Init ────────────────────────────────────────────
 fetchStockWithFallback();
 fetchAllRanges();
-
-setInterval(fetchStockWithFallback, 60000);
-setInterval(fetchAllRanges, 300000);
+startTimers(getRefreshInterval());
