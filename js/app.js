@@ -29,7 +29,118 @@ async function yahooFetch(url) {
   return null;
 }
 
-// ─── Stock Chart ─────────────────────────────────────
+// ─── Per-segment gradient coloring ───────────────────
+// Each line segment between two points is colored green (up) or red (down)
+// with alpha intensity proportional to the magnitude of the change.
+function segmentBorderColor(ctx) {
+  var p0 = ctx.p0.parsed.y;
+  var p1 = ctx.p1.parsed.y;
+  if (p0 == null || p1 == null || p0 === 0) return 'rgba(107,122,144,0.3)';
+  var pct = Math.abs((p1 - p0) / p0) * 100;
+  var alpha = Math.min(0.2 + pct * 3, 1.0);
+  return p1 >= p0
+    ? 'rgba(0,200,83,' + alpha.toFixed(2) + ')'
+    : 'rgba(255,82,82,' + alpha.toFixed(2) + ')';
+}
+
+function segmentFillColor(ctx) {
+  var p0 = ctx.p0.parsed.y;
+  var p1 = ctx.p1.parsed.y;
+  if (p0 == null || p1 == null || p0 === 0) return 'transparent';
+  var pct = Math.abs((p1 - p0) / p0) * 100;
+  var alpha = Math.min(0.02 + pct * 0.15, 0.12);
+  return p1 >= p0
+    ? 'rgba(0,200,83,' + alpha.toFixed(3) + ')'
+    : 'rgba(255,82,82,' + alpha.toFixed(3) + ')';
+}
+
+var segmentStyle = {
+  borderColor: function(ctx) { return segmentBorderColor(ctx); },
+  backgroundColor: function(ctx) { return segmentFillColor(ctx); }
+};
+
+// Shared chart options builder
+function chartOptions(xPadding) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e2736', titleColor: '#e4e8ef', bodyColor: '#e4e8ef',
+        borderColor: '#2a3548', borderWidth: 1, padding: 10,
+        callbacks: { label: function(c) { return c.dataset.label + ': $' + (c.parsed.y != null ? c.parsed.y.toFixed(2) : '--'); } }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#6b7a90', maxRotation: 0, autoSkipPadding: xPadding || 30, font: { size: 9 } }, grid: { color: 'rgba(30,39,54,.6)' } },
+      y: { ticks: { color: '#6b7a90', font: { size: 9 }, callback: function(v) { return '$' + v; } }, grid: { color: 'rgba(30,39,54,.6)' } }
+    }
+  };
+}
+
+// Helper: find first and last non-null values in an array
+function firstLast(data) {
+  var first = null, last = null;
+  for (var i = 0; i < data.length; i++) { if (data[i] !== null) { first = data[i]; break; } }
+  for (var j = data.length - 1; j >= 0; j--) { if (data[j] !== null) { last = data[j]; break; } }
+  return { first: first, last: last };
+}
+
+// Compute delta, % change, % time growing, % time shrinking from a data array
+function computeStats(data) {
+  var fl = firstLast(data);
+  var diff = 0, pct = 0, growing = 0, shrinking = 0, segments = 0;
+
+  if (fl.first !== null && fl.last !== null) {
+    diff = fl.last - fl.first;
+    pct = fl.first !== 0 ? (diff / fl.first) * 100 : 0;
+  }
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i] !== null && data[i - 1] !== null) {
+      segments++;
+      if (data[i] > data[i - 1]) growing++;
+      else if (data[i] < data[i - 1]) shrinking++;
+    }
+  }
+
+  var growPct = segments > 0 ? (growing / segments) * 100 : 0;
+  var shrinkPct = segments > 0 ? (shrinking / segments) * 100 : 0;
+
+  return { diff: diff, pct: pct, growPct: growPct, shrinkPct: shrinkPct, up: diff >= 0 };
+}
+
+// Render stats pills into a container element, and update the badge
+function renderStats(statsElId, badgeId, stats) {
+  var el = $(statsElId);
+  if (!el) return;
+
+  var sign = stats.up ? '+' : '';
+  el.innerHTML =
+    '<span class="stat-pill ' + (stats.up ? 'stat-up' : 'stat-down') + '">' +
+      '<span class="stat-label">\u0394</span> ' + sign + stats.diff.toFixed(2) +
+    '</span>' +
+    '<span class="stat-pill ' + (stats.up ? 'stat-up' : 'stat-down') + '">' +
+      sign + stats.pct.toFixed(2) + '%' +
+    '</span>' +
+    '<span class="stat-pill stat-up">' +
+      '<span class="stat-label">\u25B2</span> ' + stats.growPct.toFixed(0) + '%' +
+    '</span>' +
+    '<span class="stat-pill stat-down">' +
+      '<span class="stat-label">\u25BC</span> ' + stats.shrinkPct.toFixed(0) + '%' +
+    '</span>';
+
+  if (badgeId) {
+    var badge = $(badgeId);
+    if (badge) {
+      badge.textContent = (stats.up ? '\u25B2' : '\u25BC') + ' ' + Math.abs(stats.pct).toFixed(2) + '%';
+      badge.className = 'badge ' + (stats.up ? 'badge-up' : 'badge-down');
+    }
+  }
+}
+
+// ─── Stock Chart (Today) ────────────────────────────
 var stockChart;
 
 async function fetchStockWithFallback() {
@@ -40,7 +151,7 @@ async function fetchStockWithFallback() {
     $('stock-loader').innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
         '<div style="color:var(--red);margin-bottom:6px;font-size:.8rem;">Unable to load live stock data</div>' +
-        '<div style="font-size:.7rem;">Retrying in 60s\u2026</div>' +
+        '<div style="font-size:.7rem;">Retrying\u2026</div>' +
       '</div>';
     loadDemoStockData();
   }
@@ -60,7 +171,18 @@ function processStockData(json) {
   var price = meta.regularMarketPrice;
   var prevClose = meta.chartPreviousClose || meta.previousClose;
   var diff = price - prevClose;
-  var pct = ((diff / prevClose) * 100).toFixed(2);
+
+  // Fallback: if meta reports 0 change, derive from actual chart data
+  if (diff === 0 && data.length > 1) {
+    var fl = firstLast(data);
+    if (fl.first !== null && fl.last !== null) {
+      diff = fl.last - fl.first;
+      price = fl.last;
+      prevClose = fl.first;
+    }
+  }
+
+  var pct = prevClose ? ((diff / prevClose) * 100).toFixed(2) : '0.00';
   var up = diff >= 0;
 
   $('stock-price').textContent = '$' + price.toFixed(2);
@@ -76,7 +198,10 @@ function processStockData(json) {
   if (meta.fiftyTwoWeekLow)  $('kpi-low').textContent  = '$' + meta.fiftyTwoWeekLow.toFixed(2);
   if (meta.marketCap) $('kpi-mcap').textContent = '$' + (meta.marketCap / 1e9).toFixed(1) + 'B';
 
-  renderStockChart(labels, data, prevClose, up);
+  var stats = computeStats(data);
+  renderStats('today-stats', null, stats);
+
+  renderStockChart(labels, data, prevClose);
   $('stock-loader').style.display = 'none';
 }
 
@@ -114,53 +239,37 @@ function loadDemoStockData() {
   $('kpi-low').textContent  = '$44.50';
   $('kpi-mcap').textContent = '$249.8B';
 
-  renderStockChart(labels, data, prevClose, up);
+  var stats = computeStats(data);
+  renderStats('today-stats', null, stats);
+
+  renderStockChart(labels, data, prevClose);
 }
 
-function renderStockChart(labels, data, prevClose, up) {
+function renderStockChart(labels, data, prevClose) {
+  var dataset = {
+    label: 'CSCO', data: data,
+    borderColor: 'rgba(107,122,144,0.5)',
+    backgroundColor: 'rgba(107,122,144,0.04)',
+    segment: segmentStyle,
+    borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: true,
+  };
+  var prevDs = {
+    label: 'Prev Close', data: Array(labels.length).fill(prevClose),
+    borderColor: 'rgba(107,122,144,.35)', borderWidth: 1, borderDash: [6, 4],
+    pointRadius: 0, fill: false,
+  };
+
   if (stockChart) {
     stockChart.data.labels = labels;
     stockChart.data.datasets[0].data = data;
-    stockChart.data.datasets[0].borderColor = up ? '#00c853' : '#ff5252';
-    stockChart.data.datasets[0].backgroundColor = up ? 'rgba(0,200,83,.08)' : 'rgba(255,82,82,.08)';
     stockChart.data.datasets[1].data = Array(labels.length).fill(prevClose);
     stockChart.update('none');
   } else {
     var ctx = $('stockChart').getContext('2d');
     stockChart = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'CSCO', data: data,
-            borderColor: up ? '#00c853' : '#ff5252',
-            backgroundColor: up ? 'rgba(0,200,83,.08)' : 'rgba(255,82,82,.08)',
-            borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: true,
-          },
-          {
-            label: 'Prev Close', data: Array(labels.length).fill(prevClose),
-            borderColor: 'rgba(107,122,144,.35)', borderWidth: 1, borderDash: [6, 4],
-            pointRadius: 0, fill: false,
-          }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e2736', titleColor: '#e4e8ef', bodyColor: '#e4e8ef',
-            borderColor: '#2a3548', borderWidth: 1, padding: 10,
-            callbacks: { label: function(c) { return c.dataset.label + ': $' + (c.parsed.y ? c.parsed.y.toFixed(2) : '--'); } }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#6b7a90', maxRotation: 0, autoSkipPadding: 30, font: { size: 10 } }, grid: { color: 'rgba(30,39,54,.6)' } },
-          y: { ticks: { color: '#6b7a90', font: { size: 10 }, callback: function(v) { return '$' + v.toFixed(2); } }, grid: { color: 'rgba(30,39,54,.6)' } }
-        }
-      }
+      data: { labels: labels, datasets: [dataset, prevDs] },
+      options: chartOptions(30)
     });
   }
 }
@@ -169,9 +278,9 @@ function renderStockChart(labels, data, prevClose, up) {
 var rangeCharts = {};
 
 var ranges = [
-  { id: 'month',   canvasId: 'monthChart',   loaderId: 'month-loader',   range: '1mo',  interval: '1d',  labelFmt: { month: 'short', day: 'numeric' } },
-  { id: 'year',    canvasId: 'yearChart',     loaderId: 'year-loader',    range: '1y',   interval: '1wk', labelFmt: { year: 'numeric', month: 'short' } },
-  { id: 'alltime', canvasId: 'alltimeChart',  loaderId: 'alltime-loader', range: 'max',  interval: '1mo', labelFmt: { year: 'numeric', month: 'short' } },
+  { id: 'month',   canvasId: 'monthChart',   loaderId: 'month-loader',   statsId: 'month-stats',   badgeId: 'month-badge',   range: '1mo',  interval: '1d',  labelFmt: { month: 'short', day: 'numeric' } },
+  { id: 'year',    canvasId: 'yearChart',     loaderId: 'year-loader',    statsId: 'year-stats',    badgeId: 'year-badge',    range: '1y',   interval: '1wk', labelFmt: { year: 'numeric', month: 'short' } },
+  { id: 'alltime', canvasId: 'alltimeChart',  loaderId: 'alltime-loader', statsId: 'alltime-stats', badgeId: 'alltime-badge', range: 'max',  interval: '1mo', labelFmt: { year: 'numeric', month: 'short' } },
 ];
 
 async function fetchRange(cfg) {
@@ -186,13 +295,9 @@ async function fetchRange(cfg) {
     });
     var data = closes.map(function(c) { return c !== null ? +c.toFixed(2) : null; });
 
-    // Determine color from first→last close
-    var first = data.find(function(v) { return v !== null; });
-    var last = null;
-    for (var i = data.length - 1; i >= 0; i--) { if (data[i] !== null) { last = data[i]; break; } }
-    var up = (last !== null && first !== null) ? last >= first : true;
-
-    renderRangeChart(cfg, labels, data, up);
+    var stats = computeStats(data);
+    renderStats(cfg.statsId, cfg.badgeId, stats);
+    renderRangeChart(cfg, labels, data);
     $(cfg.loaderId).style.display = 'none';
   } else {
     $(cfg.loaderId).innerHTML =
@@ -203,45 +308,26 @@ async function fetchRange(cfg) {
   }
 }
 
-function renderRangeChart(cfg, labels, data, up) {
-  var color = up ? '#00c853' : '#ff5252';
-  var bg    = up ? 'rgba(0,200,83,.08)' : 'rgba(255,82,82,.08)';
+function renderRangeChart(cfg, labels, data) {
+  var dataset = {
+    label: 'CSCO', data: data,
+    borderColor: 'rgba(107,122,144,0.5)',
+    backgroundColor: 'rgba(107,122,144,0.04)',
+    segment: segmentStyle,
+    borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: true,
+  };
 
   if (rangeCharts[cfg.id]) {
     var ch = rangeCharts[cfg.id];
     ch.data.labels = labels;
     ch.data.datasets[0].data = data;
-    ch.data.datasets[0].borderColor = color;
-    ch.data.datasets[0].backgroundColor = bg;
     ch.update('none');
   } else {
     var ctx = $(cfg.canvasId).getContext('2d');
     rangeCharts[cfg.id] = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'CSCO', data: data,
-          borderColor: color, backgroundColor: bg,
-          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: true,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e2736', titleColor: '#e4e8ef', bodyColor: '#e4e8ef',
-            borderColor: '#2a3548', borderWidth: 1, padding: 10,
-            callbacks: { label: function(c) { return 'CSCO: $' + (c.parsed.y ? c.parsed.y.toFixed(2) : '--'); } }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#6b7a90', maxRotation: 0, autoSkipPadding: 40, font: { size: 9 } }, grid: { color: 'rgba(30,39,54,.6)' } },
-          y: { ticks: { color: '#6b7a90', font: { size: 9 }, callback: function(v) { return '$' + v; } }, grid: { color: 'rgba(30,39,54,.6)' } }
-        }
-      }
+      data: { labels: labels, datasets: [dataset] },
+      options: chartOptions(40)
     });
   }
 }

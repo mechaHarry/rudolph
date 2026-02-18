@@ -207,6 +207,43 @@ main {
   font-size: 0.8rem;
 }
 
+/* ── Card stats row ─────────────────────────── */
+.card-stats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.stat-pill .stat-label {
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.stat-pill.stat-up {
+  background: rgba(0,200,83,.1);
+  color: var(--green);
+}
+
+.stat-pill.stat-down {
+  background: rgba(255,82,82,.1);
+  color: var(--red);
+}
+
 /* ── Chart containers ────────────────────────── */
 .chart-wrap {
   flex: 1;
