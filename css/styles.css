@@ -152,10 +152,10 @@ header {
 main {
   flex: 1;
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr;
-  gap: 12px;
-  padding: 12px;
+  grid-template-columns: 1fr;
+  grid-template-rows: 3fr 1fr 1fr 1fr;
+  gap: 6px;
+  padding: 6px;
   min-height: 0;
 }
 
@@ -163,7 +163,7 @@ main {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -307,21 +307,7 @@ footer {
 }
 
 /* ── Responsive ──────────────────────────────── */
-@media (max-width: 1400px) {
-  main {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-  }
-}
-
 @media (max-width: 860px) {
-  main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    overflow-y: auto;
-  }
-  html, body { overflow: auto; }
-  .chart-wrap { min-height: 220px; }
   header { flex-wrap: wrap; }
   .hdr-kpi { border-left: none; padding: 0 8px; }
 }
