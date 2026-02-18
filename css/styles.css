@@ -46,6 +46,20 @@ header {
 
 .brand svg { width: 30px; height: 30px; }
 
+.brand-icon .nose-ring {
+  animation: nose-pulse 4s ease-in-out infinite;
+  stroke: #e74c3c;
+}
+
+.brand-icon .nose-ring.nose-up {
+  stroke: var(--green);
+}
+
+@keyframes nose-pulse {
+  0%, 100% { stroke-opacity: 1; }
+  50%      { stroke-opacity: 0.35; stroke-width: 6; }
+}
+
 .brand h1 {
   font-size: 1.1rem;
   font-weight: 600;

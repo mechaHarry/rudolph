@@ -9,53 +9,84 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-function createPNG(size) {
-  // Cisco blue background (#049fd9) with white bridge bars
-  const bg = [4, 159, 217];   // #049fd9
-  const fg = [255, 255, 255]; // white
+function setPixel(pixels, size, x, y, r, g, b, a) {
+  x = Math.round(x);
+  y = Math.round(y);
+  if (x < 0 || x >= size || y < 0 || y >= size) return;
+  const idx = (y * size + x) * 4;
+  const srcA = a / 255;
+  const dstA = pixels[idx + 3] / 255;
+  const outA = srcA + dstA * (1 - srcA);
+  if (outA === 0) return;
+  pixels[idx]     = Math.round((r * srcA + pixels[idx]     * dstA * (1 - srcA)) / outA);
+  pixels[idx + 1] = Math.round((g * srcA + pixels[idx + 1] * dstA * (1 - srcA)) / outA);
+  pixels[idx + 2] = Math.round((b * srcA + pixels[idx + 2] * dstA * (1 - srcA)) / outA);
+  pixels[idx + 3] = Math.round(outA * 255);
+}
 
-  const pixels = Buffer.alloc(size * size * 4);
-
-  // Fill background
-  for (let i = 0; i < size * size; i++) {
-    pixels[i * 4]     = bg[0];
-    pixels[i * 4 + 1] = bg[1];
-    pixels[i * 4 + 2] = bg[2];
-    pixels[i * 4 + 3] = 255;
-  }
-
-  // Draw simplified Cisco bridge icon (5 vertical bars at different heights)
-  const barWidth = Math.max(1, Math.round(size / 12));
-  const gap = Math.round(size / 8);
-  const bars = [
-    { h: 0.30 },  // short
-    { h: 0.45 },  // medium
-    { h: 0.60 },  // tall
-    { h: 0.45 },  // medium
-    { h: 0.30 },  // short
-  ];
-  const totalW = bars.length * barWidth + (bars.length - 1) * Math.max(1, Math.round(gap * 0.4));
-  let startX = Math.round((size - totalW) / 2);
-  const bottomY = Math.round(size * 0.78);
-
-  bars.forEach(function(bar) {
-    const barH = Math.round(size * bar.h);
-    const topY = bottomY - barH;
-    for (let y = topY; y < bottomY; y++) {
-      for (let x = startX; x < startX + barWidth && x < size; x++) {
-        if (y >= 0 && y < size && x >= 0) {
-          const idx = (y * size + x) * 4;
-          pixels[idx]     = fg[0];
-          pixels[idx + 1] = fg[1];
-          pixels[idx + 2] = fg[2];
-          pixels[idx + 3] = 255;
-        }
-      }
+function fillDot(pixels, size, cx, cy, radius, r, g, b, a) {
+  var r2 = radius * radius;
+  for (var y = Math.floor(cy - radius - 1); y <= Math.ceil(cy + radius + 1); y++) {
+    for (var x = Math.floor(cx - radius - 1); x <= Math.ceil(cx + radius + 1); x++) {
+      var dx = x - cx, dy = y - cy;
+      if (dx * dx + dy * dy <= r2) setPixel(pixels, size, x, y, r, g, b, a);
     }
-    startX += barWidth + Math.max(1, Math.round(gap * 0.4));
-  });
+  }
+}
 
-  // Encode as PNG
+function strokeCircle(pixels, size, cx, cy, radius, thickness, r, g, b, a) {
+  var outer2 = (radius + thickness / 2) * (radius + thickness / 2);
+  var inner2 = (radius - thickness / 2) * (radius - thickness / 2);
+  for (var y = Math.floor(cy - radius - thickness); y <= Math.ceil(cy + radius + thickness); y++) {
+    for (var x = Math.floor(cx - radius - thickness); x <= Math.ceil(cx + radius + thickness); x++) {
+      var dx = x - cx, dy = y - cy, d2 = dx * dx + dy * dy;
+      if (d2 <= outer2 && d2 >= inner2) setPixel(pixels, size, x, y, r, g, b, a);
+    }
+  }
+}
+
+function drawLine(pixels, size, x0, y0, x1, y1, thickness, r, g, b, a) {
+  var dx = x1 - x0, dy = y1 - y0;
+  var steps = Math.ceil(Math.sqrt(dx * dx + dy * dy) * 2);
+  for (var i = 0; i <= steps; i++) {
+    var t = i / steps;
+    fillDot(pixels, size, x0 + dx * t, y0 + dy * t, thickness / 2, r, g, b, a);
+  }
+}
+
+function cubicBezier(p0, p1, p2, p3, t) {
+  var u = 1 - t;
+  return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
+}
+
+function drawBezier(pixels, size, x0, y0, x1, y1, x2, y2, x3, y3, thickness, r, g, b, a) {
+  var steps = Math.ceil(size * 1.5);
+  for (var i = 0; i <= steps; i++) {
+    var t = i / steps;
+    var px = cubicBezier(x0, x1, x2, x3, t);
+    var py = cubicBezier(y0, y1, y2, y3, t);
+    fillDot(pixels, size, px, py, thickness / 2, r, g, b, a);
+  }
+}
+
+function createPNG(size) {
+  var red = [231, 76, 60];
+  var wh = [255, 255, 255];
+
+  var pixels = Buffer.alloc(size * size * 4);
+
+  var s = size / 48;
+  var lw = Math.max(1, 4.5 * s);
+
+  drawBezier(pixels, size,
+    4*s, 44*s, 2*s, 48*s, 36*s, 30*s, 33*s, 12*s,
+    lw, wh[0], wh[1], wh[2], 255);
+  drawBezier(pixels, size,
+    4*s, 27*s, 6*s, 29*s, 28*s, 14*s, 33*s, 12*s,
+    lw, wh[0], wh[1], wh[2], 255);
+
+  strokeCircle(pixels, size, 36*s, 9*s, 5*s, lw, red[0], red[1], red[2], 255);
+
   return encodePNG(size, size, pixels);
 }
 

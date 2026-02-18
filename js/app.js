@@ -1,6 +1,11 @@
 // ─── Utility ─────────────────────────────────────────
 var $ = function(id) { return document.getElementById(id); };
 
+function updateNoseColor(up) {
+  var nose = document.querySelector('.nose-ring');
+  if (nose) nose.classList.toggle('nose-up', up);
+}
+
 function updateClock() {
   $('clock').textContent = new Date().toLocaleString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric',
@@ -201,6 +206,7 @@ function processStockData(json) {
   var stats = computeStats(data);
   renderStats('today-stats', null, stats);
 
+  updateNoseColor(up);
   renderStockChart(labels, data, prevClose);
   $('stock-loader').style.display = 'none';
 }
@@ -242,6 +248,7 @@ function loadDemoStockData() {
   var stats = computeStats(data);
   renderStats('today-stats', null, stats);
 
+  updateNoseColor(up);
   renderStockChart(labels, data, prevClose);
 }
 
