@@ -6,7 +6,7 @@
   --surface:   #141924;
   --border:    #1e2736;
   --text:      #e4e8ef;
-  --muted:     #6b7a90;
+  --muted:     #8b9bb0;
   --accent:    #00bceb;
   --green:     #00c853;
   --red:       #ff5252;
@@ -66,6 +66,53 @@ header {
   letter-spacing: -0.3px;
 }
 
+/* Ticker dropdown in header */
+.hdr-ticker {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-left: 1px solid var(--border);
+}
+
+.ticker-dropdown {
+  appearance: none;
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 24px 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b9bb0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.ticker-dropdown:focus {
+  outline: 1px solid var(--accent);
+}
+
+/* Price in header */
+.hdr-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 14px;
+  border-left: 1px solid var(--border);
+}
+
+.hdr-price .stock-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.hdr-price .stock-change {
+  font-size: 0.75rem;
+}
+
 /* KPIs inline in header */
 .hdr-kpi {
   display: flex;
@@ -122,7 +169,7 @@ header {
 
 .refresh-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: #0b0e14;
 }
 
 .hdr-meta {
@@ -153,7 +200,7 @@ main {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 3fr 1fr 1fr 1fr;
+  grid-template-rows: 3fr 1fr 1fr 1fr 1fr;
   gap: 6px;
   padding: 6px;
   min-height: 0;
@@ -173,15 +220,17 @@ main {
 .card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 4px;
   flex-shrink: 0;
 }
 
 .card-header h2 {
   font-size: 0.85rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
+
 
 .badge {
   font-size: 0.65rem;
@@ -202,31 +251,13 @@ main {
   flex-shrink: 0;
 }
 
-/* ── Stock card ──────────────────────────────── */
-.stock-headline {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-shrink: 0;
-  margin-bottom: 8px;
-}
-
-.stock-price {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -1px;
-}
-
-.stock-change {
-  font-size: 0.8rem;
-}
 
 /* ── Card stats row ─────────────────────────── */
 .card-stats {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
+  gap: 4px;
+  flex-wrap: nowrap;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -245,7 +276,6 @@ main {
 
 .stat-pill .stat-label {
   font-weight: 400;
-  opacity: 0.7;
 }
 
 .stat-pill.stat-up {
@@ -256,6 +286,11 @@ main {
 .stat-pill.stat-down {
   background: rgba(255,82,82,.1);
   color: var(--red);
+}
+
+.stat-pill.stat-prior {
+  background: rgba(0,188,235,.12);
+  color: #00bceb;
 }
 
 /* ── Chart containers ────────────────────────── */
@@ -271,27 +306,56 @@ main {
 }
 
 
-/* ── Loading / Error ─────────────────────────── */
-.loading-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  color: var(--muted);
-  background: var(--surface);
-  border-radius: 12px;
-  z-index: 2;
+/* ── Skeleton / Loading ──────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.spinner {
-  width: 22px; height: 22px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
+.skel {
+  background: linear-gradient(90deg, var(--border) 25%, #1e2f44 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+.skel-pill {
+  display: inline-block;
+  width: 52px;
+  height: 16px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+.skel-price {
+  display: inline-block;
+  width: 72px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.skel-change {
+  display: inline-block;
+  width: 100px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.skel-kpi {
+  display: inline-block;
+  width: 48px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.skel-chart {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  z-index: 2;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }

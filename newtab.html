@@ -19,17 +19,28 @@
     <h1>Rudolph</h1>
   </div>
 
+  <div class="hdr-ticker">
+    <select id="ticker-select" class="ticker-dropdown">
+      <option value="CSCO" selected>CSCO</option>
+    </select>
+  </div>
+
+  <div class="hdr-price">
+    <span class="stock-price" id="stock-price"><span class="skel skel-price"></span></span>
+    <span class="stock-change" id="stock-change"><span class="skel skel-change"></span></span>
+  </div>
+
   <div class="hdr-kpi">
     <span class="hdr-kpi-label">Mkt Cap</span>
-    <span class="hdr-kpi-value" id="kpi-mcap">--</span>
+    <span class="hdr-kpi-value" id="kpi-mcap"><span class="skel skel-kpi"></span></span>
   </div>
   <div class="hdr-kpi">
     <span class="hdr-kpi-label">52w High</span>
-    <span class="hdr-kpi-value" id="kpi-high">--</span>
+    <span class="hdr-kpi-value" id="kpi-high"><span class="skel skel-kpi"></span></span>
   </div>
   <div class="hdr-kpi">
     <span class="hdr-kpi-label">52w Low</span>
-    <span class="hdr-kpi-value" id="kpi-low">--</span>
+    <span class="hdr-kpi-value" id="kpi-low"><span class="skel skel-kpi"></span></span>
   </div>
   <div class="hdr-refresh">
     <span class="hdr-kpi-label">Refresh</span>
@@ -48,21 +59,26 @@
 <!-- ── Dashboard: 3 columns, viewport-locked ──────── -->
 <main>
 
-  <!-- COL 1: CSCO Today (1-day intraday) -->
+  <!-- Hourly (1-minute intraday) -->
+  <div class="card" id="hourly-card">
+    <div class="card-header">
+      <h2>Hour &mdash; Per Minute</h2>
+      <div class="card-stats" id="hourly-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="skel skel-chart" id="hourly-loader"></div>
+      <canvas id="hourlyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Daily (hourly intervals) -->
   <div class="card" id="stock-card">
     <div class="card-header">
-      <h2>CSCO &mdash; Today</h2>
-      <span class="badge" id="stock-badge">--</span>
+      <h2>Today &mdash; Per Minute</h2>
+      <div class="card-stats" id="today-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
     </div>
-    <div class="stock-headline">
-      <span class="stock-price" id="stock-price">--</span>
-      <span class="stock-change" id="stock-change"></span>
-    </div>
-    <div class="card-stats" id="today-stats"></div>
     <div class="chart-wrap">
-      <div class="loading-overlay" id="stock-loader">
-        <div class="spinner"></div> Loading&hellip;
-      </div>
+      <div class="skel skel-chart" id="stock-loader"></div>
       <canvas id="stockChart"></canvas>
     </div>
   </div>
@@ -70,14 +86,11 @@
   <!-- COL 2: CSCO 1 Month -->
   <div class="card">
     <div class="card-header">
-      <h2>CSCO &mdash; 1 Month</h2>
-      <span class="badge" id="month-badge" style="background:rgba(0,188,235,.12);color:var(--accent);">1M</span>
+      <h2>1 Month &mdash; Per Day</h2>
+      <div class="card-stats" id="month-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
     </div>
-    <div class="card-stats" id="month-stats"></div>
     <div class="chart-wrap">
-      <div class="loading-overlay" id="month-loader">
-        <div class="spinner"></div> Loading&hellip;
-      </div>
+      <div class="skel skel-chart" id="month-loader"></div>
       <canvas id="monthChart"></canvas>
     </div>
   </div>
@@ -85,14 +98,11 @@
   <!-- COL 3: CSCO 1 Year -->
   <div class="card">
     <div class="card-header">
-      <h2>CSCO &mdash; 1 Year</h2>
-      <span class="badge" id="year-badge" style="background:rgba(0,188,235,.12);color:var(--accent);">1Y</span>
+      <h2>1 Year &mdash; Per Day</h2>
+      <div class="card-stats" id="year-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
     </div>
-    <div class="card-stats" id="year-stats"></div>
     <div class="chart-wrap">
-      <div class="loading-overlay" id="year-loader">
-        <div class="spinner"></div> Loading&hellip;
-      </div>
+      <div class="skel skel-chart" id="year-loader"></div>
       <canvas id="yearChart"></canvas>
     </div>
   </div>
@@ -100,14 +110,11 @@
   <!-- COL 4: CSCO All-Time -->
   <div class="card">
     <div class="card-header">
-      <h2>CSCO &mdash; All-Time</h2>
-      <span class="badge" id="alltime-badge" style="background:rgba(0,188,235,.12);color:var(--accent);">Max</span>
+      <h2>All-Time &mdash; Per Month</h2>
+      <div class="card-stats" id="alltime-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
     </div>
-    <div class="card-stats" id="alltime-stats"></div>
     <div class="chart-wrap">
-      <div class="loading-overlay" id="alltime-loader">
-        <div class="spinner"></div> Loading&hellip;
-      </div>
+      <div class="skel skel-chart" id="alltime-loader"></div>
       <canvas id="alltimeChart"></canvas>
     </div>
   </div>
