@@ -23,9 +23,13 @@
   </div>
 
   <div class="hdr-ticker">
-    <select id="ticker-select" class="ticker-dropdown">
-      <option value="CSCO" selected>CSCO</option>
-    </select>
+    <div class="ticker-combo" id="ticker-combo">
+      <button class="ticker-btn" id="ticker-btn" type="button">CSCO</button>
+      <div class="ticker-panel" id="ticker-panel">
+        <input type="text" class="ticker-search" id="ticker-search" placeholder="Search stocks&hellip;" autocomplete="off">
+        <div class="ticker-list" id="ticker-list"></div>
+      </div>
+    </div>
   </div>
 
   <div class="hdr-price">

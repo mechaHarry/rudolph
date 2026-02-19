@@ -79,6 +79,189 @@ function refreshAllChartColors() {
 
 // Theme init merged into the button DOMContentLoaded listener below
 
+// ─── Ticker Management ──────────────────────────────
+var currentTicker = localStorage.getItem('rudolph-ticker') || 'CSCO';
+var savedTickers = JSON.parse(
+  localStorage.getItem('rudolph-tickers') || '[{"sym":"CSCO","name":"Cisco Systems, Inc."}]'
+);
+
+function saveTickers() {
+  localStorage.setItem('rudolph-tickers', JSON.stringify(savedTickers));
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function chartUrl(params) {
+  return 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(currentTicker) + '?' + params;
+}
+
+function renderTickerList(searchResults) {
+  var el = $('ticker-list');
+  var html = '';
+
+  if (searchResults && searchResults.length) {
+    html += '<div class="ticker-section-label">Results</div>';
+    for (var i = 0; i < searchResults.length; i++) {
+      var r = searchResults[i];
+      var already = savedTickers.some(function(t) { return t.sym === r.symbol; });
+      html += '<div class="ticker-item" data-sym="' + esc(r.symbol) + '" data-name="' + esc(r.shortname || r.symbol) + '" data-action="add">' +
+        '<span class="ticker-item-sym">' + esc(r.symbol) + '</span>' +
+        '<span class="ticker-item-name">' + esc(r.shortname || r.longname || '') + '</span>' +
+        (r.exchDisp ? '<span class="ticker-item-exch">' + esc(r.exchDisp) + '</span>' : '') +
+        (already
+          ? '<span class="ticker-item-check">\u2713</span>'
+          : '<button class="ticker-item-action add" type="button">+</button>') +
+      '</div>';
+    }
+    html += '<div class="ticker-divider"></div>';
+  }
+
+  if (savedTickers.length) {
+    html += '<div class="ticker-section-label">Watchlist</div>';
+    for (var j = 0; j < savedTickers.length; j++) {
+      var t = savedTickers[j];
+      var isActive = t.sym === currentTicker;
+      html += '<div class="ticker-item' + (isActive ? ' active' : '') + '" data-sym="' + esc(t.sym) + '" data-name="' + esc(t.name) + '" data-action="select">' +
+        '<span class="ticker-item-sym">' + esc(t.sym) + '</span>' +
+        '<span class="ticker-item-name">' + esc(t.name) + '</span>' +
+        (!isActive ? '<button class="ticker-item-action remove" data-action="remove" type="button">\u00d7</button>' : '') +
+      '</div>';
+    }
+  }
+
+  el.innerHTML = html || '<div class="ticker-empty">Type to search stocks</div>';
+}
+
+var tickerSearchTimer = null;
+
+async function searchTickers(query) {
+  var url = 'https://query1.finance.yahoo.com/v1/finance/search?q=' +
+    encodeURIComponent(query) + '&quotesCount=8&newsCount=0';
+  var json = await yahooFetch(url);
+  if (json && json.quotes) {
+    var filtered = json.quotes.filter(function(r) {
+      return r.quoteType === 'EQUITY' || r.quoteType === 'ETF' || r.quoteType === 'INDEX';
+    });
+    renderTickerList(filtered);
+  }
+}
+
+function addTicker(sym, name) {
+  if (!savedTickers.some(function(t) { return t.sym === sym; })) {
+    savedTickers.push({ sym: sym, name: name });
+    saveTickers();
+  }
+  selectTicker(sym);
+}
+
+function removeTicker(sym) {
+  if (sym === currentTicker) return;
+  savedTickers = savedTickers.filter(function(t) { return t.sym !== sym; });
+  saveTickers();
+  renderTickerList();
+}
+
+function selectTicker(sym) {
+  if (sym === currentTicker) {
+    $('ticker-panel').classList.remove('open');
+    return;
+  }
+  currentTicker = sym;
+  localStorage.setItem('rudolph-ticker', sym);
+  $('ticker-btn').textContent = sym;
+  $('ticker-panel').classList.remove('open');
+  resetDashboard();
+}
+
+function resetDashboard() {
+  if (hourlyChart)  { hourlyChart.destroy(); hourlyChart = null; }
+  if (stockChart)   { stockChart.destroy();  stockChart = null; }
+  Object.keys(rangeCharts).forEach(function(k) { rangeCharts[k].destroy(); });
+  rangeCharts = {};
+  megaData = null;
+
+  ['hourly-loader','stock-loader','month-loader','year-loader','alltime-loader'].forEach(function(id) {
+    var el = $(id);
+    el.style.display = '';
+    el.className = 'skel skel-chart';
+    el.innerHTML = '';
+  });
+
+  var pills7 = new Array(8).join('<span class="skel skel-pill"></span>');
+  var pills6 = new Array(7).join('<span class="skel skel-pill"></span>');
+  ['hourly-stats','today-stats','month-stats','year-stats'].forEach(function(id) { $(id).innerHTML = pills7; });
+  $('alltime-stats').innerHTML = pills6;
+
+  $('stock-price').innerHTML  = '<span class="skel skel-price"></span>';
+  $('stock-change').innerHTML = '<span class="skel skel-change"></span>';
+  $('kpi-mcap').innerHTML     = '<span class="skel skel-kpi"></span>';
+  $('kpi-high').innerHTML     = '<span class="skel skel-kpi"></span>';
+  $('kpi-low').innerHTML      = '<span class="skel skel-kpi"></span>';
+
+  fetchMegaData();
+  fetchHourly();
+  fetchStockWithFallback();
+  fetchAllRanges();
+}
+
+function initTickerCombo() {
+  $('ticker-btn').textContent = currentTicker;
+
+  $('ticker-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    var panel = $('ticker-panel');
+    var opening = !panel.classList.contains('open');
+    panel.classList.toggle('open');
+    if (opening) {
+      $('ticker-search').value = '';
+      renderTickerList();
+      setTimeout(function() { $('ticker-search').focus(); }, 50);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#ticker-combo')) {
+      $('ticker-panel').classList.remove('open');
+    }
+  });
+
+  $('ticker-search').addEventListener('input', function() {
+    var q = this.value.trim();
+    clearTimeout(tickerSearchTimer);
+    if (q.length < 1) { renderTickerList(); return; }
+    tickerSearchTimer = setTimeout(function() { searchTickers(q); }, 250);
+  });
+
+  $('ticker-search').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var first = $('ticker-list').querySelector('.ticker-item[data-action="add"]');
+      if (first) addTicker(first.dataset.sym, first.dataset.name);
+    }
+  });
+
+  $('ticker-list').addEventListener('click', function(e) {
+    var removeBtn = e.target.closest('.remove');
+    if (removeBtn) {
+      var item = removeBtn.closest('.ticker-item');
+      if (item) removeTicker(item.dataset.sym);
+      return;
+    }
+
+    var addBtn = e.target.closest('.add');
+    var item = e.target.closest('.ticker-item');
+    if (!item) return;
+
+    if (addBtn || item.dataset.action === 'add') {
+      addTicker(item.dataset.sym, item.dataset.name);
+    } else {
+      selectTicker(item.dataset.sym);
+    }
+  });
+}
+
 // ─── Yahoo Finance fetch helper ──────────────────────
 // Extension host_permissions bypass CORS, so we fetch directly.
 // Falls back to corsproxy.io for standalone (non-extension) use.
@@ -129,7 +312,7 @@ var segmentStyle = {
 var megaData = null; // { timestamps:[], highs:[], lows:[], closes:[] }
 
 async function fetchMegaData() {
-  var json = await yahooFetch('https://query1.finance.yahoo.com/v8/finance/chart/CSCO?range=max&interval=1d');
+  var json = await yahooFetch(chartUrl('range=max&interval=1d'));
   if (json && json.chart && json.chart.result) {
     var result = json.chart.result[0];
     var ts = result.timestamp || [];
@@ -174,12 +357,14 @@ function computeStatsFromMega(daysBack) {
   };
 }
 
-function getBounds(daysBack, fallbackArrays) {
-  var s = sliceMega(daysBack);
-  if (s) return { lo: Math.floor(s.min), hi: Math.ceil(s.max) };
+function getBounds(daysBack, dataArrays) {
   var lo = Infinity, hi = -Infinity;
-  for (var i = 0; i < fallbackArrays.length; i++) {
-    var arr = fallbackArrays[i];
+
+  var s = sliceMega(daysBack);
+  if (s) { lo = s.min; hi = s.max; }
+
+  for (var i = 0; i < dataArrays.length; i++) {
+    var arr = dataArrays[i];
     if (!arr) continue;
     for (var j = 0; j < arr.length; j++) {
       var v = arr[j];
@@ -331,7 +516,7 @@ function padAlign(arr, targetLen) {
 var hourlyChart;
 
 async function fetchHourly() {
-  var json = await yahooFetch('https://query1.finance.yahoo.com/v8/finance/chart/CSCO?range=1d&interval=1m');
+  var json = await yahooFetch(chartUrl('range=1d&interval=1m'));
   if (json && json.chart && json.chart.result) {
     processHourlyData(json);
   } else {
@@ -443,7 +628,7 @@ function loadDemoHourlyData() {
 
 function renderHourlyChart(labels, data, prevClose, priorData) {
   var dataset = {
-    label: 'CSCO', data: data,
+    label: currentTicker, data: data,
     borderColor: 'rgba(138,150,170,0.4)',
     backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
@@ -481,7 +666,7 @@ function renderHourlyChart(labels, data, prevClose, priorData) {
 var stockChart;
 
 async function fetchStockWithFallback() {
-  var json = await yahooFetch('https://query1.finance.yahoo.com/v8/finance/chart/CSCO?range=5d&interval=1m');
+  var json = await yahooFetch(chartUrl('range=5d&interval=1m'));
   if (json && json.chart && json.chart.result) {
     processStockData(json);
   } else {
@@ -526,7 +711,7 @@ function processStockData(json) {
 
 function renderStockChart(labels, data, prevClose, priorData) {
   var dataset = {
-    label: 'CSCO', data: data,
+    label: currentTicker, data: data,
     borderColor: 'rgba(138,150,170,0.4)',
     backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
@@ -564,13 +749,13 @@ function renderStockChart(labels, data, prevClose, priorData) {
 var rangeCharts = {};
 
 var ranges = [
-  { id: 'month',   canvasId: 'monthChart',   loaderId: 'month-loader',   statsId: 'month-stats',   range: '3mo',  interval: '1d',  labelFmt: { month: 'short', day: 'numeric' }, hasPrior: true,  megaDays: 90 },
-  { id: 'year',    canvasId: 'yearChart',     loaderId: 'year-loader',    statsId: 'year-stats',    range: '2y',   interval: '1d',  labelFmt: { year: 'numeric', month: 'short' }, hasPrior: true,  megaDays: 730 },
-  { id: 'alltime', canvasId: 'alltimeChart',  loaderId: 'alltime-loader', statsId: 'alltime-stats', range: 'max',  interval: '1mo', labelFmt: { year: 'numeric', month: 'short' }, hasPrior: false, megaDays: 0 },
+  { id: 'month',   canvasId: 'monthChart',   loaderId: 'month-loader',   statsId: 'month-stats',   range: '3mo',  interval: '1d',  labelFmt: { month: 'short', day: 'numeric' }, hasPrior: true,  showDays: 30,  megaDays: 90 },
+  { id: 'year',    canvasId: 'yearChart',     loaderId: 'year-loader',    statsId: 'year-stats',    range: '2y',   interval: '1d',  labelFmt: { year: 'numeric', month: 'short' }, hasPrior: true,  showDays: 365, megaDays: 730 },
+  { id: 'alltime', canvasId: 'alltimeChart',  loaderId: 'alltime-loader', statsId: 'alltime-stats', range: 'max',  interval: '1mo', labelFmt: { year: 'numeric', month: 'short' }, hasPrior: false, showDays: 0,   megaDays: 0 },
 ];
 
 async function fetchRange(cfg) {
-  var json = await yahooFetch('https://query1.finance.yahoo.com/v8/finance/chart/CSCO?range=' + cfg.range + '&interval=' + cfg.interval);
+  var json = await yahooFetch(chartUrl('range=' + cfg.range + '&interval=' + cfg.interval));
   if (json && json.chart && json.chart.result) {
     var result = json.chart.result[0];
     var timestamps = result.timestamp || [];
@@ -582,11 +767,15 @@ async function fetchRange(cfg) {
     var allData = closes.map(function(c) { return c !== null ? +c.toFixed(2) : null; });
 
     var labels, data, priorData = null;
-    if (cfg.hasPrior) {
-      var half = Math.floor(allData.length / 2);
-      priorData = allData.slice(0, half);
-      data = allData.slice(half);
-      labels = allLabels.slice(half);
+    if (cfg.hasPrior && cfg.showDays > 0) {
+      var cutoffTs = Math.floor(Date.now() / 1000) - cfg.showDays * 86400;
+      var cutIdx = timestamps.length;
+      for (var k = 0; k < timestamps.length; k++) {
+        if (timestamps[k] >= cutoffTs) { cutIdx = k; break; }
+      }
+      priorData = allData.slice(0, cutIdx);
+      data = allData.slice(cutIdx);
+      labels = allLabels.slice(cutIdx);
       priorData = padAlign(priorData, data.length);
     } else {
       labels = allLabels;
@@ -608,7 +797,7 @@ async function fetchRange(cfg) {
 
 function renderRangeChart(cfg, labels, data, priorData) {
   var dataset = {
-    label: 'CSCO', data: data,
+    label: currentTicker, data: data,
     borderColor: 'rgba(138,150,170,0.4)',
     backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
@@ -681,6 +870,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (themeSel) {
     themeSel.addEventListener('change', function() { applyTheme(this.value); });
   }
+
+  initTickerCombo();
 
   var savedMs = getRefreshInterval();
   var btns = document.querySelectorAll('.refresh-btn');
