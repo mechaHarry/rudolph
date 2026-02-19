@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+<script>
+(function(){var t=localStorage.getItem('rudolph-theme');if(t&&t!=='oneui')document.body.className='theme-'+t;})();
+</script>
 
 <!-- ── Header with inline KPIs ────────────────────── -->
 <header>
@@ -49,6 +52,16 @@
       <button data-interval="5000" class="refresh-btn">5s</button>
       <button data-interval="30000" class="refresh-btn active">30s</button>
     </div>
+  </div>
+  <div class="hdr-theme">
+    <select id="theme-select" class="theme-dropdown">
+      <option value="oneui">Samsung OneUI</option>
+      <option value="glass">Apple Liquid Glass</option>
+      <option value="webex">Cisco Webex</option>
+      <option value="fluent">Windows Fluent</option>
+      <option value="material">Google Material</option>
+      <option value="carbon">IBM Carbon</option>
+    </select>
   </div>
   <div class="hdr-meta">
     <span><span class="live-dot"></span>&nbsp; Live</span>

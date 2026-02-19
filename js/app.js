@@ -15,6 +15,70 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// ─── Theme Switcher ──────────────────────────────────
+function getThemeColors() {
+  var cs = getComputedStyle(document.body);
+  var rSm = parseInt(cs.getPropertyValue('--radius-sm'), 10);
+  return {
+    muted:     cs.getPropertyValue('--muted').trim(),
+    text:      cs.getPropertyValue('--text').trim(),
+    accent:    cs.getPropertyValue('--accent').trim(),
+    surface:   cs.getPropertyValue('--surface').trim(),
+    surfaceHi: cs.getPropertyValue('--surface-hi').trim(),
+    border:    cs.getPropertyValue('--border').trim(),
+    green:     cs.getPropertyValue('--green').trim(),
+    red:       cs.getPropertyValue('--red').trim(),
+    gridLine:  cs.getPropertyValue('--grid-line').trim(),
+    radiusSm:  isNaN(rSm) ? 12 : rSm,
+    font:      cs.getPropertyValue('--font').trim(),
+    fontMono:  cs.getPropertyValue('--font-mono').trim(),
+  };
+}
+
+function applyTheme(themeId) {
+  document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
+  localStorage.setItem('rudolph-theme', themeId);
+
+  var sel = $('theme-select');
+  if (sel && sel.value !== themeId) sel.value = themeId;
+
+  refreshAllChartColors();
+}
+
+function refreshAllChartColors() {
+  var tc = getThemeColors();
+  var allCharts = [];
+  if (hourlyChart) allCharts.push(hourlyChart);
+  if (stockChart) allCharts.push(stockChart);
+  Object.keys(rangeCharts).forEach(function(k) { allCharts.push(rangeCharts[k]); });
+
+  allCharts.forEach(function(chart) {
+    chart.options.scales.x.ticks.color = tc.muted;
+    chart.options.scales.x.ticks.font.family = tc.font;
+    chart.options.scales.x.grid.color = tc.gridLine;
+    chart.options.scales.y.ticks.color = tc.muted;
+    chart.options.scales.y.ticks.font.family = tc.fontMono;
+    chart.options.scales.y.grid.color = tc.gridLine;
+    chart.options.plugins.tooltip.backgroundColor = tc.surfaceHi;
+    chart.options.plugins.tooltip.titleColor = tc.text;
+    chart.options.plugins.tooltip.bodyColor = tc.text;
+    chart.options.plugins.tooltip.borderColor = tc.border;
+    chart.options.plugins.tooltip.cornerRadius = tc.radiusSm;
+    chart.options.plugins.tooltip.titleFont.family = tc.font;
+    chart.options.plugins.tooltip.bodyFont.family = tc.fontMono;
+
+    chart.data.datasets.forEach(function(ds) {
+      if (ds.label === 'Prior') {
+        ds.borderColor = ghostBorderColor();
+      }
+    });
+
+    chart.update('none');
+  });
+}
+
+// Theme init merged into the button DOMContentLoaded listener below
+
 // ─── Yahoo Finance fetch helper ──────────────────────
 // Extension host_permissions bypass CORS, so we fetch directly.
 // Falls back to corsproxy.io for standalone (non-extension) use.
@@ -40,15 +104,20 @@ async function yahooFetch(url) {
 function segmentBorderColor(ctx) {
   var p0 = ctx.p0.parsed.y;
   var p1 = ctx.p1.parsed.y;
-  if (p0 == null || p1 == null) return 'rgba(107,122,144,0.3)';
-  return p1 >= p0 ? 'rgb(0,160,66)' : 'rgb(200,65,65)';
+  if (p0 == null || p1 == null) return 'rgba(138,150,170,0.3)';
+  var cs = getComputedStyle(document.body);
+  return p1 >= p0 ? cs.getPropertyValue('--green').trim() : cs.getPropertyValue('--red').trim();
 }
 
 function segmentFillColor(ctx) {
   var p0 = ctx.p0.parsed.y;
   var p1 = ctx.p1.parsed.y;
   if (p0 == null || p1 == null) return 'transparent';
-  return p1 >= p0 ? 'rgba(0,160,66,0.18)' : 'rgba(200,65,65,0.18)';
+  var cs = getComputedStyle(document.body);
+  var c = p1 >= p0 ? cs.getPropertyValue('--green').trim() : cs.getPropertyValue('--red').trim();
+  var m = c.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (m) return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',0.12)';
+  return c.replace('rgb(', 'rgba(').replace(')', ',0.12)');
 }
 
 var segmentStyle = {
@@ -131,6 +200,7 @@ function applyBounds(chart, bounds) {
 }
 
 function chartOptions(xPadding) {
+  var tc = getThemeColors();
   return {
     responsive: true, maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
@@ -138,16 +208,19 @@ function chartOptions(xPadding) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1e2736', titleColor: '#e4e8ef', bodyColor: '#e4e8ef',
-        borderColor: '#2a3548', borderWidth: 1, padding: 10,
+        backgroundColor: tc.surfaceHi, titleColor: tc.text, bodyColor: tc.text,
+        borderColor: tc.border, borderWidth: 1, padding: 12,
+        cornerRadius: tc.radiusSm,
+        titleFont: { size: 12, weight: '600', family: tc.font },
+        bodyFont: { size: 12, family: tc.fontMono },
         callbacks: { label: function(c) { return c.dataset.label + ': $' + (c.parsed.y != null ? c.parsed.y.toFixed(2) : '--'); } }
       }
     },
     scales: {
-      x: { ticks: { color: '#8b9bb0', maxRotation: 0, autoSkipPadding: xPadding || 30, font: { size: 9 } }, grid: { color: 'rgba(30,39,54,.6)' } },
+      x: { ticks: { color: tc.muted, maxRotation: 0, autoSkipPadding: xPadding || 30, font: { size: 10, family: tc.font } }, grid: { color: tc.gridLine } },
       y: {
-        ticks: { color: '#8b9bb0', font: { size: 9 }, callback: function(v) { return '$' + (v >= 100 ? Math.round(v) : v.toFixed(2)); } },
-        grid: { color: 'rgba(30,39,54,.6)' }
+        ticks: { color: tc.muted, font: { size: 10, family: tc.fontMono }, callback: function(v) { return '$' + (v >= 100 ? Math.round(v) : v.toFixed(2)); } },
+        grid: { color: tc.gridLine }
       }
     }
   };
@@ -228,19 +301,23 @@ function renderStats(statsElId, stats, hasPrior) {
 }
 
 // ─── Ghost dataset helper ────────────────────────────
-var ghostStyle = {
-  borderColor: 'rgba(0,188,235,0.5)',
-  borderWidth: 1.5,
-  pointRadius: 0,
-  pointHoverRadius: 0,
-  tension: 0.3,
-  fill: false,
-};
+function ghostBorderColor() {
+  var accent = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+  var m = accent.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (m) return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',0.45)';
+  return accent.replace('rgb(', 'rgba(').replace(')', ',0.45)');
+}
 
 function makeGhostDs(priorData) {
-  var ds = { label: 'Prior', data: priorData };
-  for (var k in ghostStyle) ds[k] = ghostStyle[k];
-  return ds;
+  return {
+    label: 'Prior', data: priorData,
+    borderColor: ghostBorderColor(),
+    borderWidth: 1.5,
+    pointRadius: 0,
+    pointHoverRadius: 0,
+    tension: 0.3,
+    fill: false,
+  };
 }
 
 function padAlign(arr, targetLen) {
@@ -260,8 +337,8 @@ async function fetchHourly() {
   } else {
     $('hourly-loader').innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:.8rem;">Unable to load live stock data</div>' +
-        '<div style="font-size:.7rem;">Retrying\u2026</div>' +
+        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load live stock data</div>' +
+        '<div style="font-size:12px;color:var(--muted);">Retrying\u2026</div>' +
       '</div>';
     loadDemoHourlyData();
   }
@@ -367,14 +444,14 @@ function loadDemoHourlyData() {
 function renderHourlyChart(labels, data, prevClose, priorData) {
   var dataset = {
     label: 'CSCO', data: data,
-    borderColor: 'rgba(107,122,144,0.5)',
-    backgroundColor: 'rgba(107,122,144,0.15)',
+    borderColor: 'rgba(138,150,170,0.4)',
+    backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
     borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
   };
   var prevDs = {
     label: 'Prev Close', data: Array(labels.length).fill(prevClose),
-    borderColor: 'rgba(107,122,144,.35)', borderWidth: 1, borderDash: [6, 4],
+    borderColor: 'rgba(138,150,170,.25)', borderWidth: 1, borderDash: [6, 4],
     pointRadius: 0, fill: false,
   };
   var datasets = [dataset, prevDs];
@@ -410,8 +487,8 @@ async function fetchStockWithFallback() {
   } else {
     $('stock-loader').innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:.8rem;">Unable to load data</div>' +
-        '<div style="font-size:.7rem;">Retrying\u2026</div>' +
+        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
+        '<div style="font-size:12px;color:var(--muted);">Retrying\u2026</div>' +
       '</div>';
   }
 }
@@ -450,14 +527,14 @@ function processStockData(json) {
 function renderStockChart(labels, data, prevClose, priorData) {
   var dataset = {
     label: 'CSCO', data: data,
-    borderColor: 'rgba(107,122,144,0.5)',
-    backgroundColor: 'rgba(107,122,144,0.15)',
+    borderColor: 'rgba(138,150,170,0.4)',
+    backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
     borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
   };
   var prevDs = {
     label: 'Prev Close', data: Array(labels.length).fill(prevClose),
-    borderColor: 'rgba(107,122,144,.35)', borderWidth: 1, borderDash: [6, 4],
+    borderColor: 'rgba(138,150,170,.25)', borderWidth: 1, borderDash: [6, 4],
     pointRadius: 0, fill: false,
   };
   var datasets = [dataset, prevDs];
@@ -523,8 +600,8 @@ async function fetchRange(cfg) {
   } else {
     $(cfg.loaderId).innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:.8rem;">Unable to load data</div>' +
-        '<div style="font-size:.7rem;color:var(--muted);">Retrying&hellip;</div>' +
+        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
+        '<div style="font-size:12px;color:var(--muted);">Retrying&hellip;</div>' +
       '</div>';
   }
 }
@@ -532,8 +609,8 @@ async function fetchRange(cfg) {
 function renderRangeChart(cfg, labels, data, priorData) {
   var dataset = {
     label: 'CSCO', data: data,
-    borderColor: 'rgba(107,122,144,0.5)',
-    backgroundColor: 'rgba(107,122,144,0.15)',
+    borderColor: 'rgba(138,150,170,0.4)',
+    backgroundColor: 'rgba(138,150,170,0.08)',
     segment: segmentStyle,
     borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
   };
@@ -597,10 +674,15 @@ function startTimers(ms) {
   refreshTimerRanges = setInterval(function() { fetchMegaData(); fetchAllRanges(); }, rangeMs);
 }
 
-// Wire up buttons
 document.addEventListener('DOMContentLoaded', function() {
+  var savedTheme = localStorage.getItem('rudolph-theme') || 'oneui';
+  applyTheme(savedTheme);
+  var themeSel = $('theme-select');
+  if (themeSel) {
+    themeSel.addEventListener('change', function() { applyTheme(this.value); });
+  }
+
   var savedMs = getRefreshInterval();
-  // Set initial active state
   var btns = document.querySelectorAll('.refresh-btn');
   btns.forEach(function(btn) {
     var val = parseInt(btn.getAttribute('data-interval'), 10);

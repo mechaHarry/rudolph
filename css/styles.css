@@ -1,16 +1,289 @@
-/* ── Reset & Base ─────────────────────────────── */
+/* ══════════════════════════════════════════════════
+   Rudolph — Multi-theme dashboard
+   Samsung OneUI · Apple Liquid Glass · Cisco Webex
+   Windows Fluent · Google Material · IBM Carbon
+   ══════════════════════════════════════════════════ */
+
+/* ── Reset ────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg:        #0b0e14;
-  --surface:   #141924;
-  --border:    #1e2736;
-  --text:      #e4e8ef;
-  --muted:     #8b9bb0;
-  --accent:    #00bceb;
-  --green:     #00c853;
-  --red:       #ff5252;
+/* ═══════════════════════════════════════════════
+   DESIGN TOKEN REFERENCE
+   ─────────────────────────────────────────────
+   Palette        --bg  --bg-grad  --surface  --surface-hi  --border
+                  --text  --muted  --accent  --accent-glow
+                  --green  --green-glow  --red
+   Corners        --radius-xs  --radius-sm  --radius-md  --radius-lg
+                  --radius-pill  --radius-btn
+   Depth          --shadow  --card-blur  --hdr-blur  --pill-blur
+   Surfaces       --card-bg  --card-border  --hdr-bg  --ftr-bg
+                  --pill-bg  --skel-mid  --grid-line
+   Spacing        --pad-card  --pad-hdr  --gap-grid  --gap-hdr
+   Typography     --font  --font-mono  --title-weight  --title-tracking
+   Components     --btn-active-text  --btn-active-shadow
+   ═══════════════════════════════════════════════ */
+
+/* ── Samsung OneUI (default) ─────────────────── */
+body, body.theme-oneui {
+  --bg:            #0d1017;
+  --bg-grad:       linear-gradient(168deg, #0d1017 0%, #111827 50%, #0f1520 100%);
+  --surface:       #171c28;
+  --surface-hi:    #1e2538;
+  --border:        rgba(255,255,255,.06);
+  --text:          #edf0f7;
+  --muted:         #8a96aa;
+  --accent:        #5b9bf4;
+  --accent-glow:   rgba(91,155,244,.35);
+  --green:         #3ddc84;
+  --green-glow:    rgba(61,220,132,.5);
+  --red:           #f4605a;
+  --radius-xs:     10px;
+  --radius-sm:     14px;
+  --radius-md:     20px;
+  --radius-lg:     26px;
+  --radius-pill:   100px;
+  --radius-btn:    8px;
+  --shadow:        0 2px 12px rgba(0,0,0,.35);
+  --card-bg:       linear-gradient(175deg, var(--surface) 0%, var(--surface-hi) 100%);
+  --card-border:   1px solid var(--border);
+  --card-blur:     0;
+  --hdr-bg:        linear-gradient(180deg, rgba(91,155,244,.06) 0%, transparent 100%);
+  --hdr-blur:      blur(12px);
+  --ftr-bg:        linear-gradient(0deg, rgba(91,155,244,.03) 0%, transparent 100%);
+  --pill-bg:       rgba(255,255,255,.05);
+  --pill-blur:     blur(4px);
+  --skel-mid:      rgba(91,155,244,.08);
+  --grid-line:     rgba(255,255,255,.03);
+  --pad-card:      10px 16px;
+  --pad-hdr:       12px 24px;
+  --gap-grid:      8px;
+  --gap-hdr:       16px;
+  --font:          'One UI Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'Roboto Mono', 'SF Mono', monospace;
+  --title-weight:  700;
+  --title-tracking:-0.2px;
+  --btn-active-text:   #0d1017;
+  --btn-active-shadow: 0 1px 6px var(--accent-glow);
 }
+
+/* ── Apple Liquid Glass ──────────────────────── */
+body.theme-glass {
+  --bg:            #000000;
+  --bg-grad:       linear-gradient(145deg, #050510 0%, #0a0a1a 40%, #08081a 100%);
+  --surface:       rgba(255,255,255,.04);
+  --surface-hi:    rgba(255,255,255,.06);
+  --border:        rgba(255,255,255,.10);
+  --text:          #f5f5f7;
+  --muted:         #98989d;
+  --accent:        #0a84ff;
+  --accent-glow:   rgba(10,132,255,.4);
+  --green:         #30d158;
+  --green-glow:    rgba(48,209,88,.5);
+  --red:           #ff453a;
+  --radius-xs:     12px;
+  --radius-sm:     16px;
+  --radius-md:     22px;
+  --radius-lg:     28px;
+  --radius-pill:   100px;
+  --radius-btn:    8px;
+  --shadow:        0 4px 24px rgba(0,0,0,.5), inset 0 .5px 0 rgba(255,255,255,.08);
+  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.035) 0%, rgba(255,255,255,.015) 100%);
+  --card-border:   1px solid rgba(255,255,255,.12);
+  --card-blur:     blur(40px) saturate(1.6);
+  --hdr-bg:        linear-gradient(180deg, rgba(255,255,255,.04) 0%, transparent 100%);
+  --hdr-blur:      blur(40px) saturate(1.5);
+  --ftr-bg:        linear-gradient(0deg, rgba(255,255,255,.02) 0%, transparent 100%);
+  --pill-bg:       rgba(255,255,255,.06);
+  --pill-blur:     blur(12px);
+  --skel-mid:      rgba(255,255,255,.07);
+  --grid-line:     rgba(255,255,255,.04);
+  --pad-card:      12px 18px;
+  --pad-hdr:       12px 24px;
+  --gap-grid:      10px;
+  --gap-hdr:       16px;
+  --font:          -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'SF Mono', 'Menlo', monospace;
+  --title-weight:  600;
+  --title-tracking:-0.3px;
+  --btn-active-text:   #ffffff;
+  --btn-active-shadow: 0 1px 8px var(--accent-glow);
+}
+
+/* ── Cisco Webex ─────────────────────────────── */
+body.theme-webex {
+  --bg:            #121212;
+  --bg-grad:       linear-gradient(180deg, #121212 0%, #171717 50%, #141414 100%);
+  --surface:       #1c1c1c;
+  --surface-hi:    #222222;
+  --border:        rgba(255,255,255,.08);
+  --text:          #f0f0f0;
+  --muted:         #949494;
+  --accent:        #07c1e4;
+  --accent-glow:   rgba(7,193,228,.35);
+  --green:         #1db954;
+  --green-glow:    rgba(29,185,84,.5);
+  --red:           #fc5c65;
+  --radius-xs:     8px;
+  --radius-sm:     10px;
+  --radius-md:     12px;
+  --radius-lg:     16px;
+  --radius-pill:   100px;
+  --radius-btn:    6px;
+  --shadow:        0 1px 4px rgba(0,0,0,.4);
+  --card-bg:       var(--surface);
+  --card-border:   1px solid rgba(255,255,255,.06);
+  --card-blur:     0;
+  --hdr-bg:        rgba(7,193,228,.04);
+  --hdr-blur:      blur(8px);
+  --ftr-bg:        rgba(7,193,228,.02);
+  --pill-bg:       rgba(255,255,255,.06);
+  --pill-blur:     none;
+  --skel-mid:      rgba(7,193,228,.08);
+  --grid-line:     rgba(255,255,255,.04);
+  --pad-card:      10px 16px;
+  --pad-hdr:       12px 20px;
+  --gap-grid:      6px;
+  --gap-hdr:       14px;
+  --font:          'CiscoSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'CiscoSans', monospace;
+  --title-weight:  700;
+  --title-tracking: 0px;
+  --btn-active-text:   #121212;
+  --btn-active-shadow: 0 1px 6px var(--accent-glow);
+}
+
+/* ── Windows Fluent Design ───────────────────── */
+body.theme-fluent {
+  --bg:            #202020;
+  --bg-grad:       linear-gradient(180deg, #202020 0%, #1a1a1a 50%, #1e1e1e 100%);
+  --surface:       #2d2d2d;
+  --surface-hi:    #383838;
+  --border:        rgba(255,255,255,.0837);
+  --text:          #ffffff;
+  --muted:         #9a9a9a;
+  --accent:        #60cdff;
+  --accent-glow:   rgba(96,205,255,.35);
+  --green:         #6ccb5f;
+  --green-glow:    rgba(108,203,95,.5);
+  --red:           #ff99a4;
+  --radius-xs:     4px;
+  --radius-sm:     6px;
+  --radius-md:     8px;
+  --radius-lg:     12px;
+  --radius-pill:   100px;
+  --radius-btn:    4px;
+  --shadow:        0 2px 4px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
+  --card-bg:       rgba(45,45,45,.7);
+  --card-border:   1px solid rgba(255,255,255,.0837);
+  --card-blur:     blur(20px) saturate(1.25);
+  --hdr-bg:        rgba(32,32,32,.8);
+  --hdr-blur:      blur(20px);
+  --ftr-bg:        rgba(32,32,32,.5);
+  --pill-bg:       rgba(255,255,255,.0605);
+  --pill-blur:     none;
+  --skel-mid:      rgba(96,205,255,.07);
+  --grid-line:     rgba(255,255,255,.04);
+  --pad-card:      8px 12px;
+  --pad-hdr:       10px 16px;
+  --gap-grid:      4px;
+  --gap-hdr:       12px;
+  --font:          'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:     'Cascadia Code', 'Consolas', monospace;
+  --title-weight:  600;
+  --title-tracking: 0px;
+  --btn-active-text:   #000000;
+  --btn-active-shadow: 0 0 0 1px rgba(96,205,255,.5);
+}
+
+/* ── Google Material Design 3 ────────────────── */
+body.theme-material {
+  --bg:            #141218;
+  --bg-grad:       #141218;
+  --surface:       #211f26;
+  --surface-hi:    #2b2930;
+  --border:        rgba(255,255,255,.06);
+  --text:          #e6e0e9;
+  --muted:         #cac4d0;
+  --accent:        #d0bcff;
+  --accent-glow:   rgba(208,188,255,.3);
+  --green:         #7dd077;
+  --green-glow:    rgba(125,208,119,.45);
+  --red:           #f2b8b5;
+  --radius-xs:     8px;
+  --radius-sm:     12px;
+  --radius-md:     16px;
+  --radius-lg:     20px;
+  --radius-pill:   8px;
+  --radius-btn:    20px;
+  --shadow:        0 1px 3px rgba(0,0,0,.3), 0 4px 8px rgba(0,0,0,.15);
+  --card-bg:       #211f26;
+  --card-border:   1px solid rgba(255,255,255,.06);
+  --card-blur:     0;
+  --hdr-bg:        rgba(33,31,38,.92);
+  --hdr-blur:      none;
+  --ftr-bg:        rgba(33,31,38,.6);
+  --pill-bg:       rgba(208,188,255,.08);
+  --pill-blur:     none;
+  --skel-mid:      rgba(208,188,255,.06);
+  --grid-line:     rgba(255,255,255,.05);
+  --pad-card:      12px 16px;
+  --pad-hdr:       14px 24px;
+  --gap-grid:      8px;
+  --gap-hdr:       16px;
+  --font:          'Google Sans', 'Product Sans', Roboto, system-ui, sans-serif;
+  --font-mono:     'Roboto Mono', 'Google Sans Mono', monospace;
+  --title-weight:  500;
+  --title-tracking: 0px;
+  --btn-active-text:   #381e72;
+  --btn-active-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
+}
+
+/* ── IBM Carbon ──────────────────────────────── */
+body.theme-carbon {
+  --bg:            #161616;
+  --bg-grad:       #161616;
+  --surface:       #262626;
+  --surface-hi:    #393939;
+  --border:        #393939;
+  --text:          #f4f4f4;
+  --muted:         #8d8d8d;
+  --accent:        #0f62fe;
+  --accent-glow:   rgba(15,98,254,.35);
+  --green:         #42be65;
+  --green-glow:    rgba(66,190,101,.45);
+  --red:           #fa4d56;
+  --radius-xs:     0px;
+  --radius-sm:     0px;
+  --radius-md:     0px;
+  --radius-lg:     0px;
+  --radius-pill:   100px;
+  --radius-btn:    0px;
+  --shadow:        none;
+  --card-bg:       #262626;
+  --card-border:   1px solid #393939;
+  --card-blur:     0;
+  --hdr-bg:        #161616;
+  --hdr-blur:      none;
+  --ftr-bg:        #161616;
+  --pill-bg:       rgba(255,255,255,.08);
+  --pill-blur:     none;
+  --skel-mid:      rgba(15,98,254,.08);
+  --grid-line:     rgba(255,255,255,.05);
+  --pad-card:      16px;
+  --pad-hdr:       0 16px;
+  --gap-grid:      1px;
+  --gap-hdr:       0px;
+  --font:          'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono:     'IBM Plex Mono', monospace;
+  --title-weight:  600;
+  --title-tracking: 0.16px;
+  --btn-active-text:   #ffffff;
+  --btn-active-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════
+   STRUCTURAL STYLES (driven by tokens)
+   ═══════════════════════════════════════════════ */
 
 html, body {
   height: 100%;
@@ -18,23 +291,27 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background: var(--bg);
+  font-family: var(--font);
+  background: var(--bg-grad);
   color: var(--text);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── Header ───────────────────────────────────── */
 header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 10px 20px;
+  gap: var(--gap-hdr);
+  padding: var(--pad-hdr);
+  background: var(--hdr-bg);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  backdrop-filter: var(--hdr-blur);
+  min-height: 48px;
 }
 
 .brand {
@@ -44,11 +321,11 @@ header {
   margin-right: auto;
 }
 
-.brand svg { width: 30px; height: 30px; }
+.brand svg { width: 32px; height: 32px; }
 
 .brand-icon .nose-ring {
   animation: nose-pulse 4s ease-in-out infinite;
-  stroke: #e74c3c;
+  stroke: var(--red);
 }
 
 .brand-icon .nose-ring.nose-up {
@@ -57,63 +334,72 @@ header {
 
 @keyframes nose-pulse {
   0%, 100% { stroke-opacity: 1; }
-  50%      { stroke-opacity: 0.35; stroke-width: 6; }
+  50%      { stroke-opacity: 0.3; stroke-width: 6; }
 }
 
 .brand h1 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-size: 15px;
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
 }
 
-/* Ticker dropdown in header */
-.hdr-ticker {
+/* ── Dropdowns (ticker + theme) ──────────────── */
+.hdr-ticker, .hdr-theme {
   display: flex;
   align-items: center;
-  padding: 0 14px;
+  padding-left: 16px;
   border-left: 1px solid var(--border);
 }
 
-.ticker-dropdown {
+.ticker-dropdown, .theme-dropdown {
   appearance: none;
-  background: var(--bg);
+  background-color: var(--surface);
   color: var(--accent);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 24px 4px 10px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-xs);
+  padding: 6px 28px 6px 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b9bb0'/%3E%3C/svg%3E");
+  box-shadow: var(--shadow);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 8px center;
+  background-position: right 10px center;
+  transition: border-color .2s;
 }
 
-.ticker-dropdown:focus {
-  outline: 1px solid var(--accent);
+.theme-dropdown {
+  color: var(--muted);
+  font-weight: 600;
 }
 
-/* Price in header */
+.ticker-dropdown:focus, .theme-dropdown:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ── Price in header ─────────────────────────── */
 .hdr-price {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 0 14px;
+  gap: 10px;
+  padding: 0 16px;
   border-left: 1px solid var(--border);
 }
 
 .hdr-price .stock-price {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   letter-spacing: -0.5px;
 }
 
 .hdr-price .stock-change {
-  font-size: 0.75rem;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* KPIs inline in header */
+/* ── KPIs ─────────────────────────────────────── */
 .hdr-kpi {
   display: flex;
   align-items: baseline;
@@ -123,18 +409,20 @@ header {
 }
 
 .hdr-kpi-label {
-  font-size: 0.65rem;
+  font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .hdr-kpi-value {
-  font-size: 0.9rem;
+  font-size: 13px;
   font-weight: 700;
+  font-family: var(--font-mono);
 }
 
-/* Refresh interval picker */
+/* ── Refresh picker ──────────────────────────── */
 .hdr-refresh {
   display: flex;
   align-items: center;
@@ -145,38 +433,42 @@ header {
 
 .refresh-btns {
   display: flex;
-  gap: 2px;
-  background: var(--bg);
-  border-radius: 6px;
-  padding: 2px;
+  gap: 3px;
+  background: var(--surface);
+  border-radius: var(--radius-xs);
+  padding: 3px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.25);
 }
 
 .refresh-btn {
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-btn);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all .2s ease;
 }
 
 .refresh-btn:hover {
   color: var(--text);
+  background: rgba(255,255,255,.04);
 }
 
 .refresh-btn.active {
   background: var(--accent);
-  color: #0b0e14;
+  color: var(--btn-active-text);
+  box-shadow: var(--btn-active-shadow);
 }
 
+/* ── Meta / clock ─────────────────────────────── */
 .hdr-meta {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 0.75rem;
+  gap: 12px;
+  font-size: 12px;
   color: var(--muted);
   border-left: 1px solid var(--border);
   padding-left: 14px;
@@ -188,11 +480,12 @@ header {
   border-radius: 50%;
   display: inline-block;
   animation: pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--green-glow);
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.4; transform: scale(0.8); }
+  50%      { opacity: .35; transform: scale(.75); }
 }
 
 /* ── Dashboard Grid ──────────────────────────── */
@@ -201,61 +494,66 @@ main {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 3fr 1fr 1fr 1fr 1fr;
-  gap: 6px;
-  padding: 6px;
+  gap: var(--gap-grid);
+  padding: 10px 12px;
   min-height: 0;
 }
 
+/* ── Cards ────────────────────────────────────── */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 8px 12px;
+  position: relative;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  padding: var(--pad-card);
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  box-shadow: var(--shadow);
+  backdrop-filter: var(--card-blur);
+  transition: box-shadow .25s ease;
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 4px;
   flex-shrink: 0;
 }
 
 .card-header h2 {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: var(--title-weight);
+  letter-spacing: var(--title-tracking);
   flex-shrink: 0;
+  color: var(--text);
 }
-
 
 .badge {
-  font-size: 0.65rem;
-  padding: 2px 8px;
-  border-radius: 20px;
-  font-weight: 600;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
   flex-shrink: 0;
 }
 
-.badge-up   { background: rgba(0,200,83,.15); color: var(--green); }
-.badge-down { background: rgba(255,82,82,.15); color: var(--red); }
+.badge-up   { background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--green); }
+.badge-down { background: color-mix(in srgb, var(--red) 12%, transparent);   color: var(--red); }
 
 .card-subtitle {
-  font-size: 0.7rem;
+  font-size: 12px;
   color: var(--muted);
   margin-bottom: 8px;
-  line-height: 1.3;
+  line-height: 1.4;
   flex-shrink: 0;
 }
 
-
-/* ── Card stats row ─────────────────────────── */
+/* ── Card stats (pills row) ──────────────────── */
 .card-stats {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: nowrap;
   margin-left: auto;
   flex-shrink: 0;
@@ -265,32 +563,34 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.62rem;
+  font-size: 11px;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: var(--border);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--pill-bg);
   color: var(--muted);
   white-space: nowrap;
+  backdrop-filter: var(--pill-blur);
 }
 
 .stat-pill .stat-label {
-  font-weight: 400;
+  font-weight: 500;
+  opacity: .75;
 }
 
 .stat-pill.stat-up {
-  background: rgba(0,200,83,.1);
+  background: color-mix(in srgb, var(--green) 12%, transparent);
   color: var(--green);
 }
 
 .stat-pill.stat-down {
-  background: rgba(255,82,82,.1);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
   color: var(--red);
 }
 
 .stat-pill.stat-prior {
-  background: rgba(0,188,235,.12);
-  color: #00bceb;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
 }
 
 /* ── Chart containers ────────────────────────── */
@@ -298,13 +598,14 @@ main {
   flex: 1;
   position: relative;
   min-height: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .chart-wrap canvas {
   width: 100% !important;
   height: 100% !important;
 }
-
 
 /* ── Skeleton / Loading ──────────────────────── */
 @keyframes shimmer {
@@ -313,10 +614,13 @@ main {
 }
 
 .skel {
-  background: linear-gradient(90deg, var(--border) 25%, #1e2f44 50%, var(--border) 75%);
+  background: linear-gradient(90deg,
+    rgba(255,255,255,.04) 25%,
+    var(--skel-mid) 50%,
+    rgba(255,255,255,.04) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 4px;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-xs);
   color: transparent !important;
   pointer-events: none;
   user-select: none;
@@ -324,54 +628,162 @@ main {
 
 .skel-pill {
   display: inline-block;
-  width: 52px;
-  height: 16px;
-  border-radius: 4px;
-  margin-left: 4px;
+  width: 54px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  margin-left: 5px;
 }
 
 .skel-price {
   display: inline-block;
-  width: 72px;
-  height: 18px;
-  border-radius: 4px;
+  width: 76px;
+  height: 20px;
 }
 
 .skel-change {
   display: inline-block;
   width: 100px;
-  height: 13px;
-  border-radius: 4px;
+  height: 14px;
 }
 
 .skel-kpi {
   display: inline-block;
-  width: 48px;
-  height: 14px;
-  border-radius: 4px;
+  width: 50px;
+  height: 15px;
 }
 
 .skel-chart {
   position: absolute;
   inset: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   z-index: 2;
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Footer ──────────────────────────────────── */
 footer {
   flex-shrink: 0;
   text-align: center;
-  font-size: 0.62rem;
+  font-size: 11px;
   color: var(--muted);
-  padding: 6px 20px;
+  padding: 8px 24px;
   border-top: 1px solid var(--border);
+  background: var(--ftr-bg);
+}
+
+/* ═══════════════════════════════════════════════
+   THEME-SPECIFIC OVERRIDES
+   (for effects that can't be expressed as tokens)
+   ═══════════════════════════════════════════════ */
+
+/* ── Apple Liquid Glass: iridescent pseudo-border ── */
+body.theme-glass .card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,.12) 0%,
+    rgba(120,120,255,.06) 30%,
+    rgba(255,200,255,.06) 60%,
+    rgba(255,255,255,.08) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Fluent: acrylic noise texture on header ───── */
+body.theme-fluent header {
+  border-bottom: 1px solid rgba(255,255,255,.0837);
+}
+
+body.theme-fluent .refresh-btns {
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+/* ── Material 3: tonal surface elevation ───────── */
+body.theme-material .card {
+  border: none;
+}
+
+body.theme-material .card:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,.3), 0 6px 10px 4px rgba(0,0,0,.15);
+}
+
+body.theme-material .refresh-btns {
+  box-shadow: none;
+  background: rgba(208,188,255,.08);
+  border-radius: var(--radius-btn);
+}
+
+body.theme-material .refresh-btn {
+  border-radius: var(--radius-btn);
+}
+
+body.theme-material header {
+  border-bottom: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+
+/* ── Carbon: structured grid, tight hairline gaps ── */
+body.theme-carbon header {
+  border-bottom: 2px solid var(--border);
+  min-height: 48px;
+}
+
+body.theme-carbon .hdr-ticker,
+body.theme-carbon .hdr-theme,
+body.theme-carbon .hdr-price,
+body.theme-carbon .hdr-kpi,
+body.theme-carbon .hdr-refresh,
+body.theme-carbon .hdr-meta {
+  padding-left: 16px;
+  border-left: 1px solid var(--border);
+}
+
+body.theme-carbon .refresh-btns {
+  box-shadow: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0;
+  gap: 0;
+}
+
+body.theme-carbon .refresh-btn {
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  padding: 6px 12px;
+}
+
+body.theme-carbon .refresh-btn:last-child {
+  border-right: none;
+}
+
+body.theme-carbon .refresh-btn.active {
+  box-shadow: none;
+}
+
+body.theme-carbon .stat-pill {
+  border-radius: var(--radius-pill);
+}
+
+body.theme-carbon .card-header h2 {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.32px;
+}
+
+body.theme-carbon footer {
+  border-top: 2px solid var(--border);
 }
 
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 860px) {
-  header { flex-wrap: wrap; }
+  header { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
   .hdr-kpi { border-left: none; padding: 0 8px; }
+  .hdr-ticker, .hdr-price, .hdr-theme { border-left: none; padding-left: 0; }
 }
