@@ -196,9 +196,6 @@ function resetDashboard() {
 
   $('stock-price').innerHTML  = '<span class="skel skel-price"></span>';
   $('stock-change').innerHTML = '<span class="skel skel-change"></span>';
-  $('kpi-mcap').innerHTML     = '<span class="skel skel-kpi"></span>';
-  $('kpi-high').innerHTML     = '<span class="skel skel-kpi"></span>';
-  $('kpi-low').innerHTML      = '<span class="skel skel-kpi"></span>';
 
   fetchMegaData();
   fetchHourly();
@@ -570,10 +567,6 @@ function processHourlyData(json) {
       (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%) today' +
     '</span>';
 
-  if (meta.fiftyTwoWeekHigh) $('kpi-high').textContent = '$' + meta.fiftyTwoWeekHigh.toFixed(2);
-  if (meta.fiftyTwoWeekLow)  $('kpi-low').textContent  = '$' + meta.fiftyTwoWeekLow.toFixed(2);
-  if (meta.marketCap) $('kpi-mcap').textContent = '$' + (meta.marketCap / 1e9).toFixed(1) + 'B';
-
   var stats = computeStats(data, 1);
   renderStats('hourly-stats', stats, true);
 
@@ -614,10 +607,6 @@ function loadDemoHourlyData() {
     '<span style="color:' + (up ? 'var(--green)' : 'var(--red)') + '">' +
       (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%)' +
     '</span> <span style="color:var(--muted);">(demo)</span>';
-
-  $('kpi-high').textContent = '$67.42';
-  $('kpi-low').textContent  = '$44.50';
-  $('kpi-mcap').textContent = '$249.8B';
 
   var stats = computeStats(data, 1);
   renderStats('hourly-stats', stats, true);
@@ -835,21 +824,7 @@ function fetchAllRanges() {
 var refreshTimerStock = null;
 var refreshTimerRanges = null;
 
-function getRefreshInterval() {
-  var saved = localStorage.getItem('insight-refresh');
-  return saved ? parseInt(saved, 10) : 1000;
-}
-
-function setRefreshInterval(ms) {
-  localStorage.setItem('insight-refresh', ms);
-  startTimers(ms);
-  // Update button states
-  var btns = document.querySelectorAll('.refresh-btn');
-  btns.forEach(function(btn) {
-    btn.classList.toggle('active', parseInt(btn.getAttribute('data-interval'), 10) === ms);
-  });
-}
-
+var REFRESH_MS = 1000;
 var refreshTimerHourly = null;
 
 function startTimers(ms) {
@@ -872,16 +847,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   initTickerCombo();
-
-  var savedMs = getRefreshInterval();
-  var btns = document.querySelectorAll('.refresh-btn');
-  btns.forEach(function(btn) {
-    var val = parseInt(btn.getAttribute('data-interval'), 10);
-    btn.classList.toggle('active', val === savedMs);
-    btn.addEventListener('click', function() {
-      setRefreshInterval(val);
-    });
-  });
 });
 
 // ─── Init ────────────────────────────────────────────
@@ -889,4 +854,4 @@ fetchMegaData();
 fetchHourly();
 fetchStockWithFallback();
 fetchAllRanges();
-startTimers(getRefreshInterval());
+startTimers(REFRESH_MS);
