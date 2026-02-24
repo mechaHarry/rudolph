@@ -64,6 +64,9 @@ body, body.theme-oneui {
   --title-tracking:-0.2px;
   --btn-active-text:   #0d1017;
   --btn-active-shadow: 0 1px 6px var(--accent-glow);
+  --motion-dur:        300ms;
+  --motion-ease:       cubic-bezier(.22, .61, .36, 1);
+  --motion-stagger:    60ms;
 }
 
 /* ── Apple Liquid Glass ──────────────────────── */
@@ -111,6 +114,9 @@ body.theme-glass {
   --title-tracking:-0.3px;
   --btn-active-text:   #ffffff;
   --btn-active-shadow: 0 1px 8px var(--accent-glow);
+  --motion-dur:        500ms;
+  --motion-ease:       cubic-bezier(.16, 1, .3, 1);
+  --motion-stagger:    80ms;
 }
 
 /* ── Cisco Webex ─────────────────────────────── */
@@ -154,6 +160,9 @@ body.theme-webex {
   --title-tracking: 0px;
   --btn-active-text:   #121212;
   --btn-active-shadow: 0 1px 6px var(--accent-glow);
+  --motion-dur:        250ms;
+  --motion-ease:       cubic-bezier(.25, .1, .25, 1);
+  --motion-stagger:    50ms;
 }
 
 /* ── Windows Fluent 2 Design ─────────────────── */
@@ -203,6 +212,9 @@ body.theme-fluent {
   --title-tracking: 0px;
   --btn-active-text:   #000000;
   --btn-active-shadow: 0 0 0 1px rgba(96,205,255,.5);
+  --motion-dur:        300ms;
+  --motion-ease:       cubic-bezier(0, 0, 0, 1);
+  --motion-stagger:    55ms;
 }
 
 /* ── Google Material Design 3 ────────────────── */
@@ -254,6 +266,9 @@ body.theme-material {
   --title-tracking: 0.15px;
   --btn-active-text:   #381e72;
   --btn-active-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
+  --motion-dur:        400ms;
+  --motion-ease:       cubic-bezier(.2, 0, 0, 1);
+  --motion-stagger:    70ms;
 }
 
 /* ── IBM Carbon ──────────────────────────────── */
@@ -305,6 +320,9 @@ body.theme-carbon {
   --title-tracking: 0.16px;
   --btn-active-text:   #ffffff;
   --btn-active-shadow: none;
+  --motion-dur:        150ms;
+  --motion-ease:       cubic-bezier(.2, 0, .38, .9);
+  --motion-stagger:    40ms;
 }
 
 /* ═══════════════════════════════════════════════
@@ -429,15 +447,15 @@ header {
 
 .ticker-panel {
   display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
+  position: fixed;
   width: 300px;
   background: var(--surface-hi);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 32px rgba(0,0,0,.5);
-  z-index: 200;
+  z-index: 9999;
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
   overflow: hidden;
 }
 
@@ -935,6 +953,103 @@ body.theme-carbon footer {
   border-top: 2px solid var(--border);
 }
 
+/* ═══════════════════════════════════════════════
+   PAGE ENTRANCE TRANSITIONS
+   body starts without .ready — everything hidden.
+   JS adds .ready after first paint to trigger reveal.
+   ═══════════════════════════════════════════════ */
+
+body:not(.ready) > .wallpaper-bg,
+body:not(.ready) > .wallpaper-tint {
+  opacity: 0;
+}
+
+body:not(.ready) header,
+body:not(.ready) footer {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+body:not(.ready) footer {
+  transform: translateY(12px);
+}
+
+body:not(.ready) .card {
+  opacity: 0;
+  transform: translateY(18px) scale(.97);
+}
+
+body.ready > .wallpaper-bg,
+body.ready > .wallpaper-tint {
+  transition: opacity calc(var(--motion-dur) * 2) var(--motion-ease);
+  opacity: 1;
+}
+
+body.ready header {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease),
+    transform var(--motion-dur) var(--motion-ease);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.ready footer {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 7),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 7);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.ready .card {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+body.ready .card:nth-child(1) {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 1),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 1);
+}
+body.ready .card:nth-child(2) {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 2),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 2);
+}
+body.ready .card:nth-child(3) {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 3),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 3);
+}
+body.ready .card:nth-child(4) {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 4),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 4);
+}
+body.ready .card:nth-child(5) {
+  transition:
+    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 5),
+    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.ready) header,
+  body:not(.ready) footer,
+  body:not(.ready) .card,
+  body:not(.ready) > .wallpaper-bg,
+  body:not(.ready) > .wallpaper-tint {
+    opacity: 1;
+    transform: none;
+  }
+  body.ready header,
+  body.ready footer,
+  body.ready .card,
+  body.ready > .wallpaper-bg,
+  body.ready > .wallpaper-tint {
+    transition: none;
+  }
+}
+
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 860px) {
   header { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
@@ -968,10 +1083,13 @@ body.has-wallpaper > .wallpaper-tint {
   opacity: .55;
 }
 
-body.has-wallpaper .card,
-body.has-wallpaper .ticker-panel {
+body.has-wallpaper .card {
   isolation: isolate;
   background: rgba(15,15,25,.45) !important;
+}
+
+body.has-wallpaper .ticker-panel {
+  background: rgba(15,15,25,.55) !important;
 }
 
 body.has-wallpaper footer {
@@ -987,8 +1105,7 @@ body.has-wallpaper header {
 }
 
 body.has-wallpaper .card::after,
-body.has-wallpaper footer::after,
-body.has-wallpaper .ticker-panel::after {
+body.has-wallpaper footer::after {
   content: '';
   position: absolute;
   inset: -30px;

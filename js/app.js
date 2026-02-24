@@ -53,8 +53,7 @@ function applyWallpaper(themeId) {
     blurStyle.textContent =
       'body.has-wallpaper .card::after,' +
       'body.has-wallpaper header::after,' +
-      'body.has-wallpaper footer::after,' +
-      'body.has-wallpaper .ticker-panel::after' +
+      'body.has-wallpaper footer::after' +
       '{background-image:url(' + wpUrl + ');}';
 
     document.body.classList.add('has-wallpaper');
@@ -87,7 +86,9 @@ function getThemeColors() {
 }
 
 function applyTheme(themeId) {
+  var wasReady = document.body.classList.contains('ready');
   document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
+  if (wasReady) document.body.classList.add('ready');
   localStorage.setItem('rudolph-theme', themeId);
   applyWallpaper(themeId);
 
@@ -255,15 +256,31 @@ function resetDashboard() {
   fetchAllRanges();
 }
 
+function positionTickerPanel() {
+  var btn = $('ticker-btn');
+  var panel = $('ticker-panel');
+  if (!btn || !panel) return;
+  var r = btn.getBoundingClientRect();
+  panel.style.left = r.left + 'px';
+  panel.style.top = (r.bottom + 6) + 'px';
+  panel.style.minWidth = Math.max(r.width, 300) + 'px';
+}
+
 function initTickerCombo() {
   $('ticker-btn').textContent = currentTicker;
 
+  var panel = $('ticker-panel');
+  if (panel && panel.parentElement !== document.body) {
+    document.body.appendChild(panel);
+  }
+
   $('ticker-btn').addEventListener('click', function(e) {
     e.stopPropagation();
-    var panel = $('ticker-panel');
-    var opening = !panel.classList.contains('open');
-    panel.classList.toggle('open');
+    var p = $('ticker-panel');
+    var opening = !p.classList.contains('open');
+    p.classList.toggle('open');
     if (opening) {
+      positionTickerPanel();
       $('ticker-search').value = '';
       renderTickerList();
       setTimeout(function() { $('ticker-search').focus(); }, 50);
@@ -271,7 +288,7 @@ function initTickerCombo() {
   });
 
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('#ticker-combo')) {
+    if (!e.target.closest('#ticker-combo') && !e.target.closest('#ticker-panel')) {
       $('ticker-panel').classList.remove('open');
     }
   });
@@ -899,6 +916,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   initTickerCombo();
+
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      document.body.classList.add('ready');
+    });
+  });
 });
 
 // ─── Init ────────────────────────────────────────────
