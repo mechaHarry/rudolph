@@ -15,6 +15,57 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// ─── Wallpaper (daily rotation for glass/blur themes) ─
+var WALLPAPERS = ['1.jpg','2.jpg','3.jpg','4.jpg','5.jpg','6.jpg'];
+var GLASS_THEMES = { oneui: true, glass: true, webex: true, fluent: true };
+
+function getDailyWallpaper() {
+  var d = new Date();
+  var dayIndex = Math.floor(d.getFullYear() * 366 + d.getMonth() * 31 + d.getDate());
+  return 'wallpapers/' + WALLPAPERS[dayIndex % WALLPAPERS.length];
+}
+
+function applyWallpaper(themeId) {
+  var bgEl = document.querySelector('.wallpaper-bg');
+  var tintEl = document.querySelector('.wallpaper-tint');
+  var blurStyle = document.getElementById('wp-blur-css');
+
+  if (GLASS_THEMES[themeId]) {
+    var wpUrl = getDailyWallpaper();
+
+    if (!bgEl) {
+      bgEl = document.createElement('div');
+      bgEl.className = 'wallpaper-bg';
+      document.body.insertBefore(bgEl, document.body.firstChild);
+    }
+    if (!tintEl) {
+      tintEl = document.createElement('div');
+      tintEl.className = 'wallpaper-tint';
+      document.body.insertBefore(tintEl, bgEl.nextSibling);
+    }
+    bgEl.style.backgroundImage = 'url(' + wpUrl + ')';
+
+    if (!blurStyle) {
+      blurStyle = document.createElement('style');
+      blurStyle.id = 'wp-blur-css';
+      document.head.appendChild(blurStyle);
+    }
+    blurStyle.textContent =
+      'body.has-wallpaper .card::after,' +
+      'body.has-wallpaper header::after,' +
+      'body.has-wallpaper footer::after,' +
+      'body.has-wallpaper .ticker-panel::after' +
+      '{background-image:url(' + wpUrl + ');}';
+
+    document.body.classList.add('has-wallpaper');
+  } else {
+    document.body.classList.remove('has-wallpaper');
+    if (bgEl) bgEl.remove();
+    if (tintEl) tintEl.remove();
+    if (blurStyle) blurStyle.remove();
+  }
+}
+
 // ─── Theme Switcher ──────────────────────────────────
 function getThemeColors() {
   var cs = getComputedStyle(document.body);
@@ -38,6 +89,7 @@ function getThemeColors() {
 function applyTheme(themeId) {
   document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
   localStorage.setItem('rudolph-theme', themeId);
+  applyWallpaper(themeId);
 
   var sel = $('theme-select');
   if (sel && sel.value !== themeId) sel.value = themeId;

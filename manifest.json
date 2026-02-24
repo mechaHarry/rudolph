@@ -14,5 +14,9 @@
   "permissions": [],
   "host_permissions": [
     "https://query1.finance.yahoo.com/*"
-  ]
+  ],
+  "web_accessible_resources": [{
+    "resources": ["wallpapers/*"],
+    "matches": ["<all_urls>"]
+  }]
 }

@@ -8,7 +8,7 @@
 </head>
 <body>
 <script>
-(function(){var t=localStorage.getItem('rudolph-theme');if(t&&t!=='oneui')document.body.className='theme-'+t;})();
+(function(){var t=localStorage.getItem('rudolph-theme')||'oneui';if(t!=='oneui')document.body.className='theme-'+t;if({oneui:1,glass:1,webex:1,fluent:1}[t])document.body.classList.add('has-wallpaper');})();
 </script>
 
 <!-- ── Header with inline KPIs ────────────────────── -->
