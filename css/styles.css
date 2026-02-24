@@ -67,11 +67,15 @@ body, body.theme-oneui {
 }
 
 /* ── Apple Liquid Glass ──────────────────────── */
+/* Ref: Apple HIG Liquid Glass (WWDC25). Content-first translucent material
+   with refraction, specular highlights, concentric hardware-informed rounding.
+   System colors: systemBlue #0a84ff, systemGreen #30d158, systemRed #ff453a.
+   Fonts: SF Pro (via -apple-system). Min text 11pt. Touch target 44×44pt. */
 body.theme-glass {
   --bg:            #000000;
   --bg-grad:       linear-gradient(145deg, #050510 0%, #0a0a1a 40%, #08081a 100%);
   --surface:       rgba(255,255,255,.04);
-  --surface-hi:    rgba(255,255,255,.06);
+  --surface-hi:    rgba(255,255,255,.07);
   --border:        rgba(255,255,255,.10);
   --text:          #f5f5f7;
   --muted:         #98989d;
@@ -80,21 +84,21 @@ body.theme-glass {
   --green:         #30d158;
   --green-glow:    rgba(48,209,88,.5);
   --red:           #ff453a;
-  --radius-xs:     12px;
-  --radius-sm:     16px;
+  --radius-xs:     14px;
+  --radius-sm:     18px;
   --radius-md:     22px;
   --radius-lg:     28px;
   --radius-pill:   100px;
-  --radius-btn:    8px;
-  --shadow:        0 4px 24px rgba(0,0,0,.5), inset 0 .5px 0 rgba(255,255,255,.08);
-  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.035) 0%, rgba(255,255,255,.015) 100%);
+  --radius-btn:    10px;
+  --shadow:        0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.05) inset;
+  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.018) 100%);
   --card-border:   1px solid rgba(255,255,255,.12);
-  --card-blur:     blur(40px) saturate(1.6);
-  --hdr-bg:        linear-gradient(180deg, rgba(255,255,255,.04) 0%, transparent 100%);
-  --hdr-blur:      blur(40px) saturate(1.5);
+  --card-blur:     blur(48px) saturate(1.7);
+  --hdr-bg:        linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.01) 100%);
+  --hdr-blur:      blur(48px) saturate(1.5);
   --ftr-bg:        linear-gradient(0deg, rgba(255,255,255,.02) 0%, transparent 100%);
   --pill-bg:       rgba(255,255,255,.06);
-  --pill-blur:     blur(12px);
+  --pill-blur:     blur(16px);
   --skel-mid:      rgba(255,255,255,.07);
   --grid-line:     rgba(255,255,255,.04);
   --pad-card:      12px 18px;
@@ -152,38 +156,44 @@ body.theme-webex {
   --btn-active-shadow: 0 1px 6px var(--accent-glow);
 }
 
-/* ── Windows Fluent Design ───────────────────── */
+/* ── Windows Fluent 2 Design ─────────────────── */
+/* Ref: fluent2.microsoft.design. 4px base spacing grid.
+   Radii: Small 2, Medium 4, Large 8, XLarge 12, Circular 10000.
+   Shadow ramp: 2/4/8/16/28/64 — dark mode uses 2× opacity (28% key, 24% ambient).
+   Neutral palette: Bg2 #1F1F1F, Bg1 #292929, Bg6 #333333.
+   Stroke1: rgba(255,255,255,.0837). Foreground1: #FFF, Fg3: #ADADAD.
+   Acrylic material: translucent blur + subtle noise. */
 body.theme-fluent {
-  --bg:            #202020;
-  --bg-grad:       linear-gradient(180deg, #202020 0%, #1a1a1a 50%, #1e1e1e 100%);
-  --surface:       #2d2d2d;
-  --surface-hi:    #383838;
+  --bg:            #1f1f1f;
+  --bg-grad:       #1f1f1f;
+  --surface:       #292929;
+  --surface-hi:    #333333;
   --border:        rgba(255,255,255,.0837);
   --text:          #ffffff;
-  --muted:         #9a9a9a;
+  --muted:         #adadad;
   --accent:        #60cdff;
   --accent-glow:   rgba(96,205,255,.35);
   --green:         #6ccb5f;
   --green-glow:    rgba(108,203,95,.5);
   --red:           #ff99a4;
-  --radius-xs:     4px;
-  --radius-sm:     6px;
+  --radius-xs:     2px;
+  --radius-sm:     4px;
   --radius-md:     8px;
   --radius-lg:     12px;
-  --radius-pill:   100px;
+  --radius-pill:   10000px;
   --radius-btn:    4px;
-  --shadow:        0 2px 4px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
-  --card-bg:       rgba(45,45,45,.7);
+  --shadow:        0 2px 4px rgba(0,0,0,.28), 0 0 2px rgba(0,0,0,.24);
+  --card-bg:       rgba(41,41,41,.7);
   --card-border:   1px solid rgba(255,255,255,.0837);
   --card-blur:     blur(20px) saturate(1.25);
-  --hdr-bg:        rgba(32,32,32,.8);
+  --hdr-bg:        rgba(31,31,31,.85);
   --hdr-blur:      blur(20px);
-  --ftr-bg:        rgba(32,32,32,.5);
+  --ftr-bg:        rgba(31,31,31,.6);
   --pill-bg:       rgba(255,255,255,.0605);
   --pill-blur:     none;
   --skel-mid:      rgba(96,205,255,.07);
   --grid-line:     rgba(255,255,255,.04);
-  --pad-card:      8px 12px;
+  --pad-card:      12px 16px;
   --pad-hdr:       10px 16px;
   --gap-grid:      4px;
   --gap-hdr:       12px;
@@ -196,12 +206,20 @@ body.theme-fluent {
 }
 
 /* ── Google Material Design 3 ────────────────── */
+/* Ref: m3.material.io (M3 + Expressive 2025). Dark scheme tonal palette.
+   Shape scale: None 0, XS 4, S 8, M 12, L 16, XL 28, Full 50%.
+   Tonal elevation: surface #141218, surfContainerLow #1D1B20,
+   surfContainer #211F26, surfContainerHigh #2B2930, surfContainerHighest #36343B.
+   Roles: onSurface #E6E0E9, onSurfaceVariant #CAC4D0, primary #D0BCFF,
+   onPrimary #381E72, error #F2B8B5, outlineVariant #49454F.
+   Font: Roboto. Body Medium 14/20 Regular. Title Medium 16/24 w500 ls0.15.
+   Min text 12sp. Touch target 48×48dp. */
 body.theme-material {
   --bg:            #141218;
   --bg-grad:       #141218;
   --surface:       #211f26;
   --surface-hi:    #2b2930;
-  --border:        rgba(255,255,255,.06);
+  --border:        #49454f;
   --text:          #e6e0e9;
   --muted:         #cac4d0;
   --accent:        #d0bcff;
@@ -209,36 +227,44 @@ body.theme-material {
   --green:         #7dd077;
   --green-glow:    rgba(125,208,119,.45);
   --red:           #f2b8b5;
-  --radius-xs:     8px;
-  --radius-sm:     12px;
-  --radius-md:     16px;
-  --radius-lg:     20px;
+  --radius-xs:     4px;
+  --radius-sm:     8px;
+  --radius-md:     12px;
+  --radius-lg:     16px;
   --radius-pill:   8px;
   --radius-btn:    20px;
-  --shadow:        0 1px 3px rgba(0,0,0,.3), 0 4px 8px rgba(0,0,0,.15);
-  --card-bg:       #211f26;
-  --card-border:   1px solid rgba(255,255,255,.06);
+  --shadow:        0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
+  --card-bg:       #1d1b20;
+  --card-border:   none;
   --card-blur:     0;
-  --hdr-bg:        rgba(33,31,38,.92);
+  --hdr-bg:        #211f26;
   --hdr-blur:      none;
-  --ftr-bg:        rgba(33,31,38,.6);
+  --ftr-bg:        #1d1b20;
   --pill-bg:       rgba(208,188,255,.08);
   --pill-blur:     none;
   --skel-mid:      rgba(208,188,255,.06);
-  --grid-line:     rgba(255,255,255,.05);
+  --grid-line:     rgba(202,196,208,.06);
   --pad-card:      12px 16px;
   --pad-hdr:       14px 24px;
   --gap-grid:      8px;
   --gap-hdr:       16px;
-  --font:          'Google Sans', 'Product Sans', Roboto, system-ui, sans-serif;
-  --font-mono:     'Roboto Mono', 'Google Sans Mono', monospace;
+  --font:          Roboto, 'Google Sans', system-ui, sans-serif;
+  --font-mono:     'Roboto Mono', monospace;
   --title-weight:  500;
-  --title-tracking: 0px;
+  --title-tracking: 0.15px;
   --btn-active-text:   #381e72;
   --btn-active-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
 }
 
 /* ── IBM Carbon ──────────────────────────────── */
+/* Ref: carbondesignsystem.com. Gray 100 (g100) theme — darkest.
+   Background #161616, Layer-01 #262626 (Gray 90), Layer-02 #393939 (Gray 80).
+   $text-primary #f4f4f4, $text-secondary #c6c6c6, $text-helper #8d8d8d.
+   $interactive (Blue 60) #0f62fe. $support-success #42be65, $support-error #fa4d56.
+   All corner radii 0 (rectangular). No shadows — layering model only.
+   8px mini unit. Condensed gutter 1px. Productive type: 14px base.
+   Font: IBM Plex Sans/Mono with exact fallback stacks.
+   $heading-compact-01: 14px SemiBold 18px/0.16px. Focus: 2px Blue 60 border. */
 body.theme-carbon {
   --bg:            #161616;
   --bg-grad:       #161616;
@@ -246,7 +272,7 @@ body.theme-carbon {
   --surface-hi:    #393939;
   --border:        #393939;
   --text:          #f4f4f4;
-  --muted:         #8d8d8d;
+  --muted:         #c6c6c6;
   --accent:        #0f62fe;
   --accent-glow:   rgba(15,98,254,.35);
   --green:         #42be65;
@@ -265,16 +291,16 @@ body.theme-carbon {
   --hdr-bg:        #161616;
   --hdr-blur:      none;
   --ftr-bg:        #161616;
-  --pill-bg:       rgba(255,255,255,.08);
+  --pill-bg:       #393939;
   --pill-blur:     none;
-  --skel-mid:      rgba(15,98,254,.08);
-  --grid-line:     rgba(255,255,255,.05);
+  --skel-mid:      #353535;
+  --grid-line:     #393939;
   --pad-card:      16px;
   --pad-hdr:       0 16px;
   --gap-grid:      1px;
   --gap-hdr:       0px;
-  --font:          'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  --font-mono:     'IBM Plex Mono', monospace;
+  --font:          'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace;
   --title-weight:  600;
   --title-tracking: 0.16px;
   --btn-active-text:   #ffffff;
@@ -542,70 +568,6 @@ header {
   font-weight: 600;
 }
 
-/* ── KPIs ─────────────────────────────────────── */
-.hdr-kpi {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 0 14px;
-  border-left: 1px solid var(--border);
-}
-
-.hdr-kpi-label {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-.hdr-kpi-value {
-  font-size: 13px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-
-/* ── Refresh picker ──────────────────────────── */
-.hdr-refresh {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  border-left: 1px solid var(--border);
-}
-
-.refresh-btns {
-  display: flex;
-  gap: 3px;
-  background: var(--surface);
-  border-radius: var(--radius-xs);
-  padding: 3px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.25);
-}
-
-.refresh-btn {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-btn);
-  cursor: pointer;
-  transition: all .2s ease;
-}
-
-.refresh-btn:hover {
-  color: var(--text);
-  background: rgba(255,255,255,.04);
-}
-
-.refresh-btn.active {
-  background: var(--accent);
-  color: var(--btn-active-text);
-  box-shadow: var(--btn-active-shadow);
-}
-
 /* ── Meta / clock ─────────────────────────────── */
 .hdr-meta {
   display: flex;
@@ -789,12 +751,6 @@ main {
   height: 14px;
 }
 
-.skel-kpi {
-  display: inline-block;
-  width: 50px;
-  height: 15px;
-}
-
 .skel-chart {
   position: absolute;
   inset: 0;
@@ -818,7 +774,10 @@ footer {
    (for effects that can't be expressed as tokens)
    ═══════════════════════════════════════════════ */
 
-/* ── Apple Liquid Glass: iridescent pseudo-border ── */
+/* ── Apple Liquid Glass ────────────────────────── */
+/* Iridescent pseudo-border simulates glass edge refraction.
+   Cards get specular highlight via inset shadow.
+   Per HIG: concentric rounding, scroll edge legibility. */
 body.theme-glass .card::before {
   content: '';
   position: absolute;
@@ -826,10 +785,10 @@ body.theme-glass .card::before {
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(135deg,
-    rgba(255,255,255,.12) 0%,
-    rgba(120,120,255,.06) 30%,
-    rgba(255,200,255,.06) 60%,
-    rgba(255,255,255,.08) 100%);
+    rgba(255,255,255,.14) 0%,
+    rgba(140,140,255,.06) 25%,
+    rgba(255,200,255,.06) 55%,
+    rgba(255,255,255,.10) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -837,41 +796,86 @@ body.theme-glass .card::before {
   pointer-events: none;
 }
 
-/* ── Fluent: acrylic noise texture on header ───── */
+body.theme-glass .card:hover {
+  box-shadow: 0 6px 28px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06) inset;
+}
+
+body.theme-glass .stat-pill {
+  backdrop-filter: blur(16px);
+}
+
+/* ── Windows Fluent 2 ──────────────────────────── */
+/* Acrylic material on header — translucent blur.
+   Fluent cards use Stroke1 border (colorNeutralStroke1) + Shadow4.
+   Interaction states darken for web (lighter for Windows native).
+   Focus uses thicker stroke, no color change. */
 body.theme-fluent header {
   border-bottom: 1px solid rgba(255,255,255,.0837);
 }
 
-body.theme-fluent .refresh-btns {
-  box-shadow: none;
-  border: 1px solid var(--border);
+body.theme-fluent .card {
+  border: 1px solid rgba(255,255,255,.0698);
+  border-top: 1px solid rgba(255,255,255,.0837);
 }
 
-/* ── Material 3: tonal surface elevation ───────── */
+body.theme-fluent .card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,.28), 0 0 2px rgba(0,0,0,.24);
+  border-color: rgba(255,255,255,.0837);
+}
+
+body.theme-fluent .stat-pill {
+  border-radius: 10000px;
+}
+
+body.theme-fluent .ticker-btn,
+body.theme-fluent .theme-dropdown {
+  border-radius: 4px;
+}
+
+/* ── Google Material 3 ─────────────────────────── */
+/* Tonal surface elevation: cards use surfaceContainerLow (#1D1B20)
+   and gain color tint (not shadow) for elevation. No card borders for
+   elevated variant. Header uses surfaceContainer (#211F26) with
+   Level 1 shadow. Hover: Level 2 (3dp) shadow. State layer: 8% hover. */
 body.theme-material .card {
   border: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
 }
 
 body.theme-material .card:hover {
-  box-shadow: 0 2px 6px rgba(0,0,0,.3), 0 6px 10px 4px rgba(0,0,0,.15);
-}
-
-body.theme-material .refresh-btns {
-  box-shadow: none;
-  background: rgba(208,188,255,.08);
-  border-radius: var(--radius-btn);
-}
-
-body.theme-material .refresh-btn {
-  border-radius: var(--radius-btn);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 2px 6px 2px rgba(0,0,0,.15);
+  background: #211f26;
 }
 
 body.theme-material header {
   border-bottom: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  box-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 
-/* ── Carbon: structured grid, tight hairline gaps ── */
+body.theme-material .stat-pill {
+  border-radius: 8px;
+}
+
+body.theme-material .ticker-btn,
+body.theme-material .theme-dropdown {
+  border-radius: 20px;
+  border-color: var(--border);
+}
+
+body.theme-material .ticker-panel {
+  border-radius: 12px;
+}
+
+body.theme-material footer {
+  border-top: none;
+}
+
+/* ── IBM Carbon ────────────────────────────────── */
+/* Structured grid: 2px header/footer borders, 1px card borders.
+   UI Shell header: 48px fixed height, $background (#161616).
+   Headings use $heading-compact-01: 14px→12px uppercase, SemiBold, 0.32px ls.
+   Stat pills keep pill radius for tag-like appearance.
+   No shadows anywhere — elevation via layering model only. */
 body.theme-carbon header {
   border-bottom: 2px solid var(--border);
   min-height: 48px;
@@ -880,44 +884,51 @@ body.theme-carbon header {
 body.theme-carbon .hdr-ticker,
 body.theme-carbon .hdr-theme,
 body.theme-carbon .hdr-price,
-body.theme-carbon .hdr-kpi,
-body.theme-carbon .hdr-refresh,
 body.theme-carbon .hdr-meta {
   padding-left: 16px;
   border-left: 1px solid var(--border);
 }
 
-body.theme-carbon .refresh-btns {
-  box-shadow: none;
-  background: transparent;
+body.theme-carbon .card {
   border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 0;
-  gap: 0;
-}
-
-body.theme-carbon .refresh-btn {
-  border-radius: 0;
-  border-right: 1px solid var(--border);
-  padding: 6px 12px;
-}
-
-body.theme-carbon .refresh-btn:last-child {
-  border-right: none;
-}
-
-body.theme-carbon .refresh-btn.active {
   box-shadow: none;
+}
+
+body.theme-carbon .card:hover {
+  box-shadow: none;
+  background: #2a2a2a;
 }
 
 body.theme-carbon .stat-pill {
   border-radius: var(--radius-pill);
+  background: #393939;
+}
+
+body.theme-carbon .stat-pill.stat-up {
+  background: rgba(66,190,101,.16);
+}
+
+body.theme-carbon .stat-pill.stat-down {
+  background: rgba(250,77,86,.16);
+}
+
+body.theme-carbon .stat-pill.stat-prior {
+  background: rgba(15,98,254,.16);
 }
 
 body.theme-carbon .card-header h2 {
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.32px;
+}
+
+body.theme-carbon .ticker-btn,
+body.theme-carbon .theme-dropdown {
+  border-radius: 0;
+}
+
+body.theme-carbon .ticker-panel {
+  border-radius: 0;
 }
 
 body.theme-carbon footer {
@@ -927,6 +938,5 @@ body.theme-carbon footer {
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 860px) {
   header { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
-  .hdr-kpi { border-left: none; padding: 0 8px; }
   .hdr-ticker, .hdr-price, .hdr-theme { border-left: none; padding-left: 0; }
 }
