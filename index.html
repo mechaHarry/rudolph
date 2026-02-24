@@ -8,8 +8,21 @@
 </head>
 <body>
 <script>
-(function(){var t=localStorage.getItem('rudolph-theme')||'oneui';if(t!=='oneui')document.body.className='theme-'+t;if({oneui:1,glass:1,webex:1,fluent:1}[t])document.body.classList.add('has-wallpaper');})();
+(function(){
+  var t=localStorage.getItem('rudolph-theme')||'oneui';
+  if(t!=='oneui')document.body.className='theme-'+t;
+  if({oneui:1,glass:1,webex:1,fluent:1}[t])document.body.classList.add('has-wallpaper');
+})();
 </script>
+
+<div id="loader">
+  <svg viewBox="0 0 48 48" fill="none">
+    <path d="M4 44 C2 48 36 30 33 12" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <path d="M4 27 C6 29 28 14 33 12" stroke="white" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    <circle class="loader-nose" cx="36" cy="9" r="5" stroke="#e74c3c" stroke-width="4.5" fill="none"/>
+  </svg>
+  <div id="loader-text">Loading&hellip;</div>
+</div>
 
 <!-- ── Header with inline KPIs ────────────────────── -->
 <header>

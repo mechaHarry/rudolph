@@ -954,100 +954,65 @@ body.theme-carbon footer {
 }
 
 /* ═══════════════════════════════════════════════
-   PAGE ENTRANCE TRANSITIONS
-   body starts without .ready — everything hidden.
-   JS adds .ready after first paint to trigger reveal.
+   LOADING OVERLAY — Rudolph deer with sniffing nose
+   Covers the page until content is ready, then fades out.
    ═══════════════════════════════════════════════ */
 
-body:not(.ready) > .wallpaper-bg,
-body:not(.ready) > .wallpaper-tint {
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #0d1017);
+  transition: opacity .4s ease;
+  will-change: opacity;
+  contain: strict;
+}
+
+#loader.fade-out {
   opacity: 0;
+  pointer-events: none;
 }
 
-body:not(.ready) header,
-body:not(.ready) footer {
-  opacity: 0;
-  transform: translateY(-12px);
+
+#loader svg {
+  width: 96px;
+  height: 96px;
+  will-change: transform;
+  contain: layout style;
 }
 
-body:not(.ready) footer {
-  transform: translateY(12px);
+@keyframes sniff {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-6px) rotate(-4deg); }
+  50%      { transform: translateY(2px) rotate(2deg); }
+  75%      { transform: translateY(-4px) rotate(-2deg); }
 }
 
-body:not(.ready) .card {
-  opacity: 0;
-  transform: translateY(18px) scale(.97);
+@keyframes nose-throb {
+  0%, 100% { transform: scale(1);   opacity: .7; }
+  50%      { transform: scale(1.25); opacity: 1; }
 }
 
-body.ready > .wallpaper-bg,
-body.ready > .wallpaper-tint {
-  transition: opacity calc(var(--motion-dur) * 2) var(--motion-ease);
-  opacity: 1;
+#loader svg {
+  animation: sniff 1s ease-in-out infinite;
 }
 
-body.ready header {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease),
-    transform var(--motion-dur) var(--motion-ease);
-  opacity: 1;
-  transform: translateY(0);
+#loader .loader-nose {
+  transform-origin: 36px 9px;
+  will-change: transform, opacity;
+  animation: nose-throb .6s ease-in-out infinite;
 }
 
-body.ready footer {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 7),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 7);
-  opacity: 1;
-  transform: translateY(0);
-}
-
-body.ready .card {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-body.ready .card:nth-child(1) {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 1),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 1);
-}
-body.ready .card:nth-child(2) {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 2),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 2);
-}
-body.ready .card:nth-child(3) {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 3),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 3);
-}
-body.ready .card:nth-child(4) {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 4),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 4);
-}
-body.ready .card:nth-child(5) {
-  transition:
-    opacity var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 5),
-    transform var(--motion-dur) var(--motion-ease) calc(var(--motion-stagger) * 5);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body:not(.ready) header,
-  body:not(.ready) footer,
-  body:not(.ready) .card,
-  body:not(.ready) > .wallpaper-bg,
-  body:not(.ready) > .wallpaper-tint {
-    opacity: 1;
-    transform: none;
-  }
-  body.ready header,
-  body.ready footer,
-  body.ready .card,
-  body.ready > .wallpaper-bg,
-  body.ready > .wallpaper-tint {
-    transition: none;
-  }
+#loader-text {
+  margin-top: 16px;
+  font-family: var(--font, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 13px;
+  color: var(--muted, #8a96aa);
+  letter-spacing: .5px;
 }
 
 /* ── Responsive ──────────────────────────────── */

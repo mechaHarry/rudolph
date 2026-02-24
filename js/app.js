@@ -1,6 +1,10 @@
 // ─── Utility ─────────────────────────────────────────
 var $ = function(id) { return document.getElementById(id); };
 
+function yieldFrame() {
+  return new Promise(function(r) { requestAnimationFrame(function() { setTimeout(r, 0); }); });
+}
+
 function updateNoseColor(up) {
   var nose = document.querySelector('.nose-ring');
   if (nose) nose.classList.toggle('nose-up', up);
@@ -595,7 +599,7 @@ async function fetchHourly() {
   }
 }
 
-function processHourlyData(json) {
+async function processHourlyData(json) {
   var result = json.chart.result[0];
   var meta = result.meta;
   var timestamps = result.timestamp || [];
@@ -638,10 +642,12 @@ function processHourlyData(json) {
 
   var stats = computeStats(data, 1);
   renderStats('hourly-stats', stats, true);
-
   updateNoseColor(up);
+
+  await yieldFrame();
   renderHourlyChart(labels, data, prevClose, priorData);
   $('hourly-loader').style.display = 'none';
+  markChartLoaded('hourly');
 }
 
 function loadDemoHourlyData() {
@@ -682,6 +688,8 @@ function loadDemoHourlyData() {
 
   updateNoseColor(up);
   renderHourlyChart(labels, data, prevClose, priorData);
+  $('hourly-loader').style.display = 'none';
+  markChartLoaded('hourly');
 }
 
 function renderHourlyChart(labels, data, prevClose, priorData) {
@@ -736,7 +744,7 @@ async function fetchStockWithFallback() {
   }
 }
 
-function processStockData(json) {
+async function processStockData(json) {
   var result = json.chart.result[0];
   var meta = result.meta;
   var timestamps = result.timestamp || [];
@@ -763,8 +771,10 @@ function processStockData(json) {
   var stats = computeStats(data, 2);
   renderStats('today-stats', stats, true);
 
+  await yieldFrame();
   renderStockChart(labels, data, prevClose, priorData);
   $('stock-loader').style.display = 'none';
+  markChartLoaded('stock');
 }
 
 function renderStockChart(labels, data, prevClose, priorData) {
@@ -842,8 +852,10 @@ async function fetchRange(cfg) {
 
     var stats = computeStats(data, cfg.megaDays);
     renderStats(cfg.statsId, stats, cfg.hasPrior);
+    await yieldFrame();
     renderRangeChart(cfg, labels, data, priorData);
     $(cfg.loaderId).style.display = 'none';
+    markChartLoaded(cfg.id);
   } else {
     $(cfg.loaderId).innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
@@ -907,6 +919,29 @@ function startTimers(ms) {
   refreshTimerRanges = setInterval(function() { fetchMegaData(); fetchAllRanges(); }, rangeMs);
 }
 
+// ─── Loader dismiss ──────────────────────────────────
+var _loaderDismissed = false;
+var _chartsLoaded = {};
+
+function markChartLoaded(id) {
+  _chartsLoaded[id] = true;
+  var needed = ['hourly', 'stock', 'month', 'year', 'alltime'];
+  for (var i = 0; i < needed.length; i++) {
+    if (!_chartsLoaded[needed[i]]) return;
+  }
+  dismissLoader();
+}
+
+function dismissLoader() {
+  if (_loaderDismissed) return;
+  _loaderDismissed = true;
+  var el = $('loader');
+  if (!el) return;
+  el.classList.add('fade-out');
+  el.addEventListener('transitionend', function() { el.remove(); });
+  setTimeout(function() { el.remove(); }, 600);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var savedTheme = localStorage.getItem('rudolph-theme') || 'oneui';
   applyTheme(savedTheme);
@@ -916,12 +951,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   initTickerCombo();
+  document.body.style.background = '';
 
-  requestAnimationFrame(function() {
-    requestAnimationFrame(function() {
-      document.body.classList.add('ready');
-    });
-  });
+  setTimeout(dismissLoader, 6000);
 });
 
 // ─── Init ────────────────────────────────────────────
