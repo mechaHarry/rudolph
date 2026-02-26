@@ -19,55 +19,6 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ─── Wallpaper (daily rotation for glass/blur themes) ─
-var WALLPAPERS = ['1.jpg','2.jpg','3.jpg','4.jpg','5.jpg','6.jpg'];
-var GLASS_THEMES = { oneui: true, glass: true, webex: true, fluent: true };
-
-function getDailyWallpaper() {
-  var d = new Date();
-  var dayIndex = Math.floor(d.getFullYear() * 366 + d.getMonth() * 31 + d.getDate());
-  return 'wallpapers/' + WALLPAPERS[dayIndex % WALLPAPERS.length];
-}
-
-function applyWallpaper(themeId) {
-  var bgEl = document.querySelector('.wallpaper-bg');
-  var tintEl = document.querySelector('.wallpaper-tint');
-  var blurStyle = document.getElementById('wp-blur-css');
-
-  if (GLASS_THEMES[themeId]) {
-    var wpUrl = getDailyWallpaper();
-
-    if (!bgEl) {
-      bgEl = document.createElement('div');
-      bgEl.className = 'wallpaper-bg';
-      document.body.insertBefore(bgEl, document.body.firstChild);
-    }
-    if (!tintEl) {
-      tintEl = document.createElement('div');
-      tintEl.className = 'wallpaper-tint';
-      document.body.insertBefore(tintEl, bgEl.nextSibling);
-    }
-    bgEl.style.backgroundImage = 'url(' + wpUrl + ')';
-
-    if (!blurStyle) {
-      blurStyle = document.createElement('style');
-      blurStyle.id = 'wp-blur-css';
-      document.head.appendChild(blurStyle);
-    }
-    blurStyle.textContent =
-      'body.has-wallpaper .card::after,' +
-      'body.has-wallpaper header::after,' +
-      'body.has-wallpaper footer::after' +
-      '{background-image:url(' + wpUrl + ');}';
-
-    document.body.classList.add('has-wallpaper');
-  } else {
-    document.body.classList.remove('has-wallpaper');
-    if (bgEl) bgEl.remove();
-    if (tintEl) tintEl.remove();
-    if (blurStyle) blurStyle.remove();
-  }
-}
 
 // ─── Theme Switcher ──────────────────────────────────
 function getThemeColors() {
@@ -94,7 +45,6 @@ function applyTheme(themeId) {
   document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
   if (wasReady) document.body.classList.add('ready');
   localStorage.setItem('rudolph-theme', themeId);
-  applyWallpaper(themeId);
 
   var sel = $('theme-select');
   if (sel && sel.value !== themeId) sel.value = themeId;
@@ -945,7 +895,7 @@ function dismissLoader() {
 
 // ─── Gridstack Dashboard ─────────────────────────────
 var GRID_STORAGE_KEY = 'rudolph-grid-layout';
-var GRID_VERSION = 2;
+var GRID_VERSION = 4;
 var dashGrid = null;
 
 var DEFAULT_LAYOUT = [
@@ -984,85 +934,101 @@ function resizeAllCharts() {
 }
 
 function getThemeGap() {
-  var v = getComputedStyle(document.documentElement).getPropertyValue('--gap-grid').trim();
+  var v = getComputedStyle(document.body).getPropertyValue('--gap-grid').trim();
   return parseInt(v, 10) || 8;
 }
 
-function computeCellH() {
+function getMaxRow(layout) {
+  if (!layout) layout = DEFAULT_LAYOUT;
+  var max = 0;
+  layout.forEach(function(n) { max = Math.max(max, (n.y || 0) + (n.h || 1)); });
+  return max || 9;
+}
+
+function getAvailableHeight() {
   var hdr = document.querySelector('header');
   var ftr = document.querySelector('footer');
   var hdrH = hdr ? hdr.offsetHeight : 0;
   var ftrH = ftr ? ftr.offsetHeight : 0;
-  var avail = window.innerHeight - hdrH - ftrH - 20;
-  return Math.max(40, Math.floor(avail / 9));
+  return window.innerHeight - hdrH - ftrH;
+}
+
+function computeCellH(rows, marginPx) {
+  var avail = getAvailableHeight();
+  var totalMargins = rows * 2 * marginPx;
+  return Math.max(30, Math.floor((avail - totalMargins) / rows));
+}
+
+function fitGridToViewport() {
+  if (!dashGrid) return;
+  var m = Math.round(getThemeGap() / 2);
+  var rows = getMaxRow(dashGrid.engine.nodes.length ? dashGrid.engine.nodes : null);
+  var ch = computeCellH(rows, m);
+  dashGrid.batchUpdate();
+  dashGrid.margin(m);
+  dashGrid.cellHeight(ch);
+  dashGrid.batchUpdate(false);
+  setTimeout(resizeAllCharts, 60);
 }
 
 function syncGridToTheme() {
-  if (!dashGrid) return;
-  var gap = getThemeGap();
-  dashGrid.margin(Math.round(gap / 2));
-  dashGrid.cellHeight(computeCellH());
-  setTimeout(resizeAllCharts, 50);
+  fitGridToViewport();
 }
 
 function initDashboardGrid() {
   var el = document.getElementById('dashboard-grid');
-  if (!el || typeof GridStack === 'undefined') return;
+  if (!el) { console.warn('Grid element not found'); return; }
+  if (typeof GridStack === 'undefined') { console.warn('GridStack not loaded'); return; }
 
   var saved = loadGridLayout();
-  if (saved && saved.length) {
-    saved.forEach(function(item) {
-      var node = el.querySelector('[gs-id="' + item.id + '"]');
-      if (node) {
-        if (item.x != null) node.setAttribute('gs-x', item.x);
-        if (item.y != null) node.setAttribute('gs-y', item.y);
-        if (item.w != null) node.setAttribute('gs-w', item.w);
-        if (item.h != null) node.setAttribute('gs-h', item.h);
-      }
-    });
-  }
+  var layout = (saved && saved.length) ? saved : DEFAULT_LAYOUT;
+
+  layout.forEach(function(item) {
+    var node = el.querySelector('[gs-id="' + item.id + '"]');
+    if (node) {
+      node.setAttribute('gs-x', item.x != null ? item.x : 0);
+      node.setAttribute('gs-y', item.y != null ? item.y : 0);
+      node.setAttribute('gs-w', item.w != null ? item.w : 6);
+      node.setAttribute('gs-h', item.h != null ? item.h : 3);
+    }
+  });
 
   var gap = getThemeGap();
+  var m = Math.round(gap / 2);
+  var rows = getMaxRow(layout);
+  var ch = computeCellH(rows, m);
 
   try {
     dashGrid = GridStack.init({
       column: 12,
-      cellHeight: computeCellH(),
-      maxRow: 9,
-      margin: Math.round(gap / 2),
+      cellHeight: ch,
+      maxRow: rows,
+      margin: m,
       animate: true,
       float: false,
       handle: '.card-header',
-      columnOpts: { breakpoints: [{ w: 0, c: 12 }] },
       resizable: { handles: 'e,se,s,sw,w' },
     }, el);
   } catch (e) {
-    console.error('GridStack init failed:', e);
+    console.error('GridStack.init() threw:', e);
     return;
   }
 
+  if (!dashGrid) { console.error('GridStack.init() returned null'); return; }
+
   dashGrid.on('change', function() {
     saveGridLayout();
-    setTimeout(resizeAllCharts, 50);
+    setTimeout(resizeAllCharts, 60);
   });
+  dashGrid.on('resizestop', function() { setTimeout(resizeAllCharts, 60); });
+  dashGrid.on('dragstop', function() { setTimeout(resizeAllCharts, 60); });
 
-  dashGrid.on('resizestop', function() {
-    setTimeout(resizeAllCharts, 50);
-  });
-
-  dashGrid.on('dragstop', function() {
-    setTimeout(resizeAllCharts, 50);
-  });
+  setTimeout(fitGridToViewport, 100);
 
   var resizeTimer;
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function() {
-      if (dashGrid) {
-        dashGrid.cellHeight(computeCellH());
-        resizeAllCharts();
-      }
-    }, 150);
+    resizeTimer = setTimeout(fitGridToViewport, 150);
   });
 }
 

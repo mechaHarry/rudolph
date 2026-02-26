@@ -12,9 +12,9 @@
 (function(){
   var t=localStorage.getItem('rudolph-theme')||'oneui';
   if(t!=='oneui')document.body.className='theme-'+t;
-  if({oneui:1,glass:1,webex:1,fluent:1}[t])document.body.classList.add('has-wallpaper');
 })();
 </script>
+<div id="glow-bg" aria-hidden="true"><div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div></div>
 
 <div id="loader">
   <svg viewBox="0 0 48 48" fill="none">
