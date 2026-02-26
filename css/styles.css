@@ -420,6 +420,24 @@ header {
   border-color: var(--accent);
 }
 
+.reset-layout-btn {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  margin-left: 6px;
+  box-shadow: var(--shadow);
+  transition: color .2s, border-color .2s;
+}
+.reset-layout-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ── Ticker combo (searchable) ───────────────── */
 .ticker-combo { position: relative; }
 
@@ -611,15 +629,17 @@ header {
   50%      { opacity: .35; transform: scale(.75); }
 }
 
-/* ── Dashboard Grid ──────────────────────────── */
-main {
+/* ── Dashboard Grid (Gridstack) ──────────────── */
+main.grid-stack {
   flex: 1;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 3fr 1fr 1fr 1fr 1fr;
-  gap: var(--gap-grid);
-  padding: 10px 12px;
   min-height: 0;
+  max-height: 100%;
+  padding: 6px;
+  overflow: hidden;
+}
+
+.grid-stack > .grid-stack-item > .grid-stack-item-content {
+  overflow: hidden !important;
 }
 
 /* ── Cards ────────────────────────────────────── */
@@ -631,11 +651,47 @@ main {
   padding: var(--pad-card);
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  height: 100%;
   overflow: hidden;
   box-shadow: var(--shadow);
   backdrop-filter: var(--card-blur);
   transition: box-shadow .25s ease;
+}
+
+.ui-draggable-dragging > .grid-stack-item-content {
+  opacity: .85;
+  box-shadow: 0 12px 40px rgba(0,0,0,.5) !important;
+}
+
+.grid-stack-placeholder > .placeholder-content {
+  border: 2px dashed var(--accent, #5b9bf4) !important;
+  border-radius: var(--radius-md) !important;
+  background: color-mix(in srgb, var(--accent, #5b9bf4) 8%, transparent) !important;
+}
+
+/* ── Resize handles: generous hit areas ────────── */
+.grid-stack-item > .ui-resizable-handle {
+  z-index: 10;
+}
+.grid-stack-item > .ui-resizable-e {
+  width: 12px; right: 0; top: 8%; bottom: 8%;
+  cursor: e-resize;
+}
+.grid-stack-item > .ui-resizable-w {
+  width: 12px; left: 0; top: 8%; bottom: 8%;
+  cursor: w-resize;
+}
+.grid-stack-item > .ui-resizable-s {
+  height: 12px; bottom: 0; left: 8%; right: 8%;
+  cursor: s-resize;
+}
+.grid-stack-item > .ui-resizable-se {
+  width: 20px; height: 20px; right: 0; bottom: 0;
+  cursor: se-resize;
+}
+.grid-stack-item > .ui-resizable-sw {
+  width: 20px; height: 20px; left: 0; bottom: 0;
+  cursor: sw-resize;
 }
 
 .card-header {
@@ -644,6 +700,11 @@ main {
   gap: 10px;
   margin-bottom: 4px;
   flex-shrink: 0;
+  padding: 2px 0 6px;
+  cursor: grab;
+}
+.card-header:active {
+  cursor: grabbing;
 }
 
 .card-header h2 {
@@ -1096,7 +1157,8 @@ body.has-wallpaper header::after {
 }
 
 body.has-wallpaper .theme-dropdown,
-body.has-wallpaper .ticker-btn {
+body.has-wallpaper .ticker-btn,
+body.has-wallpaper .reset-layout-btn {
   background-color: rgba(30,30,40,.5) !important;
 }
 

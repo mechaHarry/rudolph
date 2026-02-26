@@ -16,7 +16,7 @@
     "https://query1.finance.yahoo.com/*"
   ],
   "web_accessible_resources": [{
-    "resources": ["wallpapers/*"],
+    "resources": ["wallpapers/*", "css/gridstack.min.css", "js/gridstack.min.js"],
     "matches": ["<all_urls>"]
   }]
 }

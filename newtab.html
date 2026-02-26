@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rudolph</title>
+  <link rel="stylesheet" href="css/gridstack.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -59,6 +60,7 @@
       <option value="material">Google Material</option>
       <option value="carbon">IBM Carbon</option>
     </select>
+    <button id="reset-layout-btn" class="reset-layout-btn" type="button" title="Reset grid layout">&#x21BB;</button>
   </div>
   <div class="hdr-meta">
     <span><span class="live-dot"></span>&nbsp; Live</span>
@@ -66,66 +68,56 @@
   </div>
 </header>
 
-<!-- ── Dashboard: 3 columns, viewport-locked ──────── -->
-<main>
+<!-- ── Dashboard: draggable/resizable Gridstack ────── -->
+<main class="grid-stack" id="dashboard-grid">
 
-  <!-- Hourly (1-minute intraday) -->
-  <div class="card" id="hourly-card">
-    <div class="card-header">
-      <h2>Hour &mdash; Per Minute</h2>
-      <div class="card-stats" id="hourly-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="skel skel-chart" id="hourly-loader"></div>
-      <canvas id="hourlyChart"></canvas>
+  <div class="grid-stack-item" gs-id="hourly" gs-x="0" gs-y="0" gs-w="12" gs-h="3" gs-min-w="4" gs-min-h="2">
+    <div class="grid-stack-item-content card" id="hourly-card">
+      <div class="card-header">
+        <h2>Hour &mdash; Per Minute</h2>
+        <div class="card-stats" id="hourly-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+      </div>
+      <div class="chart-wrap"><div class="skel skel-chart" id="hourly-loader"></div><canvas id="hourlyChart"></canvas></div>
     </div>
   </div>
 
-  <!-- Daily (hourly intervals) -->
-  <div class="card" id="stock-card">
-    <div class="card-header">
-      <h2>Today &mdash; Per Minute</h2>
-      <div class="card-stats" id="today-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="skel skel-chart" id="stock-loader"></div>
-      <canvas id="stockChart"></canvas>
+  <div class="grid-stack-item" gs-id="stock" gs-x="0" gs-y="3" gs-w="6" gs-h="3" gs-min-w="4" gs-min-h="2">
+    <div class="grid-stack-item-content card" id="stock-card">
+      <div class="card-header">
+        <h2>Today &mdash; Per Minute</h2>
+        <div class="card-stats" id="today-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+      </div>
+      <div class="chart-wrap"><div class="skel skel-chart" id="stock-loader"></div><canvas id="stockChart"></canvas></div>
     </div>
   </div>
 
-  <!-- COL 2: CSCO 1 Month -->
-  <div class="card">
-    <div class="card-header">
-      <h2>1 Month &mdash; Per Day</h2>
-      <div class="card-stats" id="month-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="skel skel-chart" id="month-loader"></div>
-      <canvas id="monthChart"></canvas>
+  <div class="grid-stack-item" gs-id="month" gs-x="6" gs-y="3" gs-w="6" gs-h="3" gs-min-w="4" gs-min-h="2">
+    <div class="grid-stack-item-content card">
+      <div class="card-header">
+        <h2>1 Month &mdash; Per Day</h2>
+        <div class="card-stats" id="month-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+      </div>
+      <div class="chart-wrap"><div class="skel skel-chart" id="month-loader"></div><canvas id="monthChart"></canvas></div>
     </div>
   </div>
 
-  <!-- COL 3: CSCO 1 Year -->
-  <div class="card">
-    <div class="card-header">
-      <h2>1 Year &mdash; Per Day</h2>
-      <div class="card-stats" id="year-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="skel skel-chart" id="year-loader"></div>
-      <canvas id="yearChart"></canvas>
+  <div class="grid-stack-item" gs-id="year" gs-x="0" gs-y="6" gs-w="6" gs-h="3" gs-min-w="4" gs-min-h="2">
+    <div class="grid-stack-item-content card">
+      <div class="card-header">
+        <h2>1 Year &mdash; Per Day</h2>
+        <div class="card-stats" id="year-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+      </div>
+      <div class="chart-wrap"><div class="skel skel-chart" id="year-loader"></div><canvas id="yearChart"></canvas></div>
     </div>
   </div>
 
-  <!-- COL 4: CSCO All-Time -->
-  <div class="card">
-    <div class="card-header">
-      <h2>All-Time &mdash; Per Month</h2>
-      <div class="card-stats" id="alltime-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="skel skel-chart" id="alltime-loader"></div>
-      <canvas id="alltimeChart"></canvas>
+  <div class="grid-stack-item" gs-id="alltime" gs-x="6" gs-y="6" gs-w="6" gs-h="3" gs-min-w="4" gs-min-h="2">
+    <div class="grid-stack-item-content card">
+      <div class="card-header">
+        <h2>All-Time &mdash; Per Month</h2>
+        <div class="card-stats" id="alltime-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+      </div>
+      <div class="chart-wrap"><div class="skel skel-chart" id="alltime-loader"></div><canvas id="alltimeChart"></canvas></div>
     </div>
   </div>
 
@@ -136,6 +128,7 @@
 </footer>
 
 <script src="js/chart.umd.min.js"></script>
+<script src="js/gridstack.min.js"></script>
 <script src="js/app.js"></script>
 
 </body>

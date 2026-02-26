@@ -100,6 +100,7 @@ function applyTheme(themeId) {
   if (sel && sel.value !== themeId) sel.value = themeId;
 
   refreshAllChartColors();
+  syncGridToTheme();
 }
 
 function refreshAllChartColors() {
@@ -942,6 +943,129 @@ function dismissLoader() {
   setTimeout(function() { el.remove(); }, 600);
 }
 
+// ─── Gridstack Dashboard ─────────────────────────────
+var GRID_STORAGE_KEY = 'rudolph-grid-layout';
+var GRID_VERSION = 2;
+var dashGrid = null;
+
+var DEFAULT_LAYOUT = [
+  { id: 'hourly',  x: 0, y: 0, w: 12, h: 3 },
+  { id: 'stock',   x: 0, y: 3, w: 6,  h: 3 },
+  { id: 'month',   x: 6, y: 3, w: 6,  h: 3 },
+  { id: 'year',    x: 0, y: 6, w: 6,  h: 3 },
+  { id: 'alltime', x: 6, y: 6, w: 6,  h: 3 },
+];
+
+function saveGridLayout() {
+  if (!dashGrid) return;
+  var nodes = dashGrid.engine.nodes;
+  var items = nodes.map(function(n) {
+    return { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h };
+  });
+  localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify({ v: GRID_VERSION, items: items }));
+}
+
+function loadGridLayout() {
+  try {
+    var raw = localStorage.getItem(GRID_STORAGE_KEY);
+    if (!raw) return null;
+    var data = JSON.parse(raw);
+    if (data && data.v === GRID_VERSION && Array.isArray(data.items)) return data.items;
+    localStorage.removeItem(GRID_STORAGE_KEY);
+  } catch (e) {
+    localStorage.removeItem(GRID_STORAGE_KEY);
+  }
+  return null;
+}
+
+function resizeAllCharts() {
+  [hourlyChart, stockChart].forEach(function(c) { if (c) c.resize(); });
+  Object.keys(rangeCharts).forEach(function(k) { if (rangeCharts[k]) rangeCharts[k].resize(); });
+}
+
+function getThemeGap() {
+  var v = getComputedStyle(document.documentElement).getPropertyValue('--gap-grid').trim();
+  return parseInt(v, 10) || 8;
+}
+
+function computeCellH() {
+  var hdr = document.querySelector('header');
+  var ftr = document.querySelector('footer');
+  var hdrH = hdr ? hdr.offsetHeight : 0;
+  var ftrH = ftr ? ftr.offsetHeight : 0;
+  var avail = window.innerHeight - hdrH - ftrH - 20;
+  return Math.max(40, Math.floor(avail / 9));
+}
+
+function syncGridToTheme() {
+  if (!dashGrid) return;
+  var gap = getThemeGap();
+  dashGrid.margin(Math.round(gap / 2));
+  dashGrid.cellHeight(computeCellH());
+  setTimeout(resizeAllCharts, 50);
+}
+
+function initDashboardGrid() {
+  var el = document.getElementById('dashboard-grid');
+  if (!el || typeof GridStack === 'undefined') return;
+
+  var saved = loadGridLayout();
+  if (saved && saved.length) {
+    saved.forEach(function(item) {
+      var node = el.querySelector('[gs-id="' + item.id + '"]');
+      if (node) {
+        if (item.x != null) node.setAttribute('gs-x', item.x);
+        if (item.y != null) node.setAttribute('gs-y', item.y);
+        if (item.w != null) node.setAttribute('gs-w', item.w);
+        if (item.h != null) node.setAttribute('gs-h', item.h);
+      }
+    });
+  }
+
+  var gap = getThemeGap();
+
+  try {
+    dashGrid = GridStack.init({
+      column: 12,
+      cellHeight: computeCellH(),
+      maxRow: 9,
+      margin: Math.round(gap / 2),
+      animate: true,
+      float: false,
+      handle: '.card-header',
+      columnOpts: { breakpoints: [{ w: 0, c: 12 }] },
+      resizable: { handles: 'e,se,s,sw,w' },
+    }, el);
+  } catch (e) {
+    console.error('GridStack init failed:', e);
+    return;
+  }
+
+  dashGrid.on('change', function() {
+    saveGridLayout();
+    setTimeout(resizeAllCharts, 50);
+  });
+
+  dashGrid.on('resizestop', function() {
+    setTimeout(resizeAllCharts, 50);
+  });
+
+  dashGrid.on('dragstop', function() {
+    setTimeout(resizeAllCharts, 50);
+  });
+
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      if (dashGrid) {
+        dashGrid.cellHeight(computeCellH());
+        resizeAllCharts();
+      }
+    }, 150);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var savedTheme = localStorage.getItem('rudolph-theme') || 'oneui';
   applyTheme(savedTheme);
@@ -951,7 +1075,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   initTickerCombo();
+  initDashboardGrid();
   document.body.style.background = '';
+
+  var resetBtn = $('reset-layout-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      localStorage.removeItem(GRID_STORAGE_KEY);
+      location.reload();
+    });
+  }
 
   setTimeout(dismissLoader, 6000);
 });
