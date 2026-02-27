@@ -27,9 +27,9 @@
 body, body.theme-oneui {
   --bg:            #0d1017;
   --bg-grad:       #0d1017;
-  --glow-a:        rgba(20,80,210,.45);
-  --glow-b:        rgba(100,40,180,.35);
-  --glow-c:        rgba(30,60,160,.30);
+  --glow-a:        #0d1017;
+  --glow-b:        #183a90;
+  --glow-c:        #3a1870;
   --surface:       #171c28;
   --surface-hi:    #1e2538;
   --border:        rgba(255,255,255,.06);
@@ -80,9 +80,9 @@ body, body.theme-oneui {
 body.theme-glass {
   --bg:            #000000;
   --bg-grad:       #000000;
-  --glow-a:        rgba(90,50,160,.40);
-  --glow-b:        rgba(20,80,140,.35);
-  --glow-c:        rgba(60,30,120,.30);
+  --glow-a:        #000000;
+  --glow-b:        #22144a;
+  --glow-c:        #0e2240;
   --surface:       rgba(255,255,255,.04);
   --surface-hi:    rgba(255,255,255,.07);
   --border:        rgba(255,255,255,.10);
@@ -129,9 +129,9 @@ body.theme-glass {
 body.theme-webex {
   --bg:            #121212;
   --bg-grad:       #121212;
-  --glow-a:        rgba(7,193,228,.35);
-  --glow-b:        rgba(4,80,110,.30);
-  --glow-c:        rgba(10,160,200,.25);
+  --glow-a:        #121212;
+  --glow-b:        #146080;
+  --glow-c:        #0e4860;
   --surface:       #1c1c1c;
   --surface-hi:    #222222;
   --border:        rgba(255,255,255,.08);
@@ -184,9 +184,9 @@ body.theme-webex {
 body.theme-fluent {
   --bg:            #1f1f1f;
   --bg-grad:       #1f1f1f;
-  --glow-a:        rgba(0,120,212,.35);
-  --glow-b:        rgba(20,60,130,.30);
-  --glow-c:        rgba(40,90,160,.25);
+  --glow-a:        #1f1f1f;
+  --glow-b:        #244a88;
+  --glow-c:        #443468;
   --surface:       #292929;
   --surface-hi:    #333333;
   --border:        rgba(255,255,255,.0837);
@@ -241,9 +241,9 @@ body.theme-fluent {
 body.theme-material {
   --bg:            #141218;
   --bg-grad:       #141218;
-  --glow-a:        rgba(50,40,180,.35);
-  --glow-b:        rgba(180,30,30,.25);
-  --glow-c:        rgba(30,120,40,.25);
+  --glow-a:        #141218;
+  --glow-b:        #382278;
+  --glow-c:        #224a2e;
   --surface:       #211f26;
   --surface-hi:    #2b2930;
   --border:        #49454f;
@@ -298,9 +298,9 @@ body.theme-material {
 body.theme-carbon {
   --bg:            #161616;
   --bg-grad:       #161616;
-  --glow-a:        rgba(15,98,254,.35);
-  --glow-b:        rgba(20,60,140,.30);
-  --glow-c:        rgba(10,40,100,.25);
+  --glow-a:        #161616;
+  --glow-b:        #184078;
+  --glow-c:        #2a2258;
   --surface:       #262626;
   --surface-hi:    #393939;
   --border:        #393939;
@@ -345,61 +345,20 @@ body.theme-carbon {
 
 /* ═══════════════════════════════════════════════
    ANIMATED GLOW BACKGROUND
-   Three blurred blobs in a fixed container that
-   drift, scale, and fade with brand colors.
+   Multiple blurred spots positioned in corners and
+   random areas. JS cycles their colors independently.
    ═══════════════════════════════════════════════ */
-@keyframes blob-a {
-  0%, 100% { transform: translate(0, 0)       scale(1);   opacity: .7; }
-  33%      { transform: translate(25%, -15%)   scale(1.15); opacity: 1; }
-  66%      { transform: translate(-15%, 20%)   scale(.9);  opacity: .8; }
-}
-@keyframes blob-b {
-  0%, 100% { transform: translate(0, 0)       scale(1);   opacity: .6; }
-  33%      { transform: translate(-25%, 10%)   scale(1.1); opacity: .9; }
-  66%      { transform: translate(20%, -20%)   scale(1.05); opacity: .7; }
-}
-@keyframes blob-c {
-  0%, 100% { transform: translate(0, 0)       scale(1.05); opacity: .5; }
-  33%      { transform: translate(15%, 20%)    scale(.85); opacity: .85; }
-  66%      { transform: translate(-20%, -10%)  scale(1.15); opacity: .6; }
-}
-
 #glow-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
   pointer-events: none;
-}
-
-#glow-bg .blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  will-change: transform, opacity;
-}
-
-#glow-bg .blob-a {
-  width: 60vmax; height: 60vmax;
-  top: -15%; left: -5%;
-  background: var(--glow-a);
-  animation: blob-a 12s ease-in-out infinite;
-}
-#glow-bg .blob-b {
-  width: 55vmax; height: 55vmax;
-  bottom: -20%; right: -10%;
-  background: var(--glow-b);
-  animation: blob-b 16s ease-in-out infinite;
-}
-#glow-bg .blob-c {
-  width: 50vmax; height: 50vmax;
-  top: 35%; left: 25%;
-  background: var(--glow-c);
-  animation: blob-c 20s ease-in-out infinite;
+  background-color: var(--glow-a);
+  transition: background-color 4s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #glow-bg .blob { animation: none; opacity: .5; }
+  #glow-bg { transition: none; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -538,6 +497,45 @@ header {
 .ticker-btn:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+/* ── Chart tooltip (external DOM, fixed to viewport) ── */
+.chart-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity .15s ease;
+  max-width: 260px;
+}
+.chart-tooltip.visible { opacity: 1; }
+.chart-tooltip .tt-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.chart-tooltip .tt-body {
+  font-family: var(--font-mono);
+}
+.chart-tooltip .tt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-tooltip .tt-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .ticker-panel {
@@ -955,6 +953,15 @@ body.theme-glass .card:hover {
 
 body.theme-glass .stat-pill {
   backdrop-filter: blur(16px);
+}
+
+body.theme-glass .chart-tooltip {
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(40px) saturate(1.8) brightness(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8) brightness(1.1);
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4),
+              inset 0 .5px 0 rgba(255,255,255,.15);
 }
 
 /* ── Windows Fluent 2 ──────────────────────────── */

@@ -40,6 +40,85 @@ function getThemeColors() {
   };
 }
 
+// ─── Glow background animation ──────────────────────
+var _glowTimer = null;
+var _glowIdx = 0;
+
+function startGlow() {
+  if (_glowTimer) clearInterval(_glowTimer);
+  var el = document.getElementById('glow-bg');
+  if (!el) return;
+  var cs = getComputedStyle(document.body);
+  var colors = [
+    cs.getPropertyValue('--glow-a').trim(),
+    cs.getPropertyValue('--glow-b').trim(),
+    cs.getPropertyValue('--glow-c').trim()
+  ];
+  _glowIdx = 0;
+  el.style.transition = 'none';
+  el.style.backgroundColor = colors[0];
+  el.offsetHeight;
+  el.style.transition = 'background-color 4s ease';
+  _glowTimer = setInterval(function() {
+    _glowIdx = (_glowIdx + 1) % colors.length;
+    el.style.backgroundColor = colors[_glowIdx];
+  }, 4000);
+}
+
+// ─── External tooltip handler (frosted glass) ───────
+var _tooltipEl = null;
+
+function getTooltipEl() {
+  if (!_tooltipEl) {
+    _tooltipEl = document.createElement('div');
+    _tooltipEl.className = 'chart-tooltip';
+    document.body.appendChild(_tooltipEl);
+  }
+  return _tooltipEl;
+}
+
+function externalTooltipHandler(context) {
+  var tooltip = context.tooltip;
+  var el = getTooltipEl();
+
+  if (tooltip.opacity === 0) {
+    el.classList.remove('visible');
+    return;
+  }
+
+  var titleLines = tooltip.title || [];
+  var bodyLines = tooltip.body ? tooltip.body.map(function(b) { return b.lines; }) : [];
+
+  var html = '';
+  if (titleLines.length) {
+    html += '<div class="tt-title">' + titleLines.join(' ') + '</div>';
+  }
+  html += '<div class="tt-body">';
+  bodyLines.forEach(function(lines, i) {
+    var color = tooltip.labelColors && tooltip.labelColors[i]
+      ? tooltip.labelColors[i].borderColor : 'var(--accent)';
+    lines.forEach(function(line) {
+      html += '<div class="tt-row"><span class="tt-swatch" style="background:' + color + '"></span>' + line + '</div>';
+    });
+  });
+  html += '</div>';
+  el.innerHTML = html;
+
+  var canvasRect = context.chart.canvas.getBoundingClientRect();
+  var left = canvasRect.left + tooltip.caretX + 12;
+  var top = canvasRect.top + tooltip.caretY;
+  var elW = el.offsetWidth;
+  var elH = el.offsetHeight;
+  if (left + elW > window.innerWidth - 8) left = left - elW - 24;
+  if (top + elH > window.innerHeight - 8) top = window.innerHeight - elH - 8;
+  if (left < 8) left = 8;
+  if (top < 8) top = 8;
+
+  el.style.left = left + 'px';
+  el.style.top = top + 'px';
+  el.classList.add('visible');
+}
+
 function applyTheme(themeId) {
   var wasReady = document.body.classList.contains('ready');
   document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
@@ -51,6 +130,7 @@ function applyTheme(themeId) {
 
   refreshAllChartColors();
   syncGridToTheme();
+  startGlow();
 }
 
 function refreshAllChartColors() {
@@ -67,13 +147,8 @@ function refreshAllChartColors() {
     chart.options.scales.y.ticks.color = tc.muted;
     chart.options.scales.y.ticks.font.family = tc.fontMono;
     chart.options.scales.y.grid.color = tc.gridLine;
-    chart.options.plugins.tooltip.backgroundColor = tc.surfaceHi;
-    chart.options.plugins.tooltip.titleColor = tc.text;
-    chart.options.plugins.tooltip.bodyColor = tc.text;
-    chart.options.plugins.tooltip.borderColor = tc.border;
-    chart.options.plugins.tooltip.cornerRadius = tc.radiusSm;
-    chart.options.plugins.tooltip.titleFont.family = tc.font;
-    chart.options.plugins.tooltip.bodyFont.family = tc.fontMono;
+    chart.options.plugins.tooltip.enabled = false;
+    chart.options.plugins.tooltip.external = externalTooltipHandler;
 
     chart.data.datasets.forEach(function(ds) {
       if (ds.label === 'Prior') {
@@ -414,11 +489,8 @@ function chartOptions(xPadding) {
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: tc.surfaceHi, titleColor: tc.text, bodyColor: tc.text,
-        borderColor: tc.border, borderWidth: 1, padding: 12,
-        cornerRadius: tc.radiusSm,
-        titleFont: { size: 12, weight: '600', family: tc.font },
-        bodyFont: { size: 12, family: tc.fontMono },
+        enabled: false,
+        external: externalTooltipHandler,
         callbacks: { label: function(c) { return c.dataset.label + ': $' + (c.parsed.y != null ? c.parsed.y.toFixed(2) : '--'); } }
       }
     },
@@ -895,7 +967,7 @@ function dismissLoader() {
 
 // ─── Gridstack Dashboard ─────────────────────────────
 var GRID_STORAGE_KEY = 'rudolph-grid-layout';
-var GRID_VERSION = 4;
+var GRID_VERSION = 5;
 var dashGrid = null;
 
 var DEFAULT_LAYOUT = [
@@ -945,28 +1017,24 @@ function getMaxRow(layout) {
   return max || 9;
 }
 
-function getAvailableHeight() {
+function computeCellH(rows) {
   var hdr = document.querySelector('header');
   var ftr = document.querySelector('footer');
-  var hdrH = hdr ? hdr.offsetHeight : 0;
-  var ftrH = ftr ? ftr.offsetHeight : 0;
-  return window.innerHeight - hdrH - ftrH;
-}
-
-function computeCellH(rows, marginPx) {
-  var avail = getAvailableHeight();
-  var totalMargins = rows * 2 * marginPx;
-  return Math.max(30, Math.floor((avail - totalMargins) / rows));
+  var avail = window.innerHeight - (hdr ? hdr.offsetHeight : 0) - (ftr ? ftr.offsetHeight : 0);
+  return Math.max(30, avail / rows);
 }
 
 function fitGridToViewport() {
   if (!dashGrid) return;
   var m = Math.round(getThemeGap() / 2);
-  var rows = getMaxRow(dashGrid.engine.nodes.length ? dashGrid.engine.nodes : null);
-  var ch = computeCellH(rows, m);
+  var nodes = dashGrid.engine.nodes;
+  var rows = getMaxRow(nodes.length ? nodes : null);
+  var ch = computeCellH(rows);
   dashGrid.batchUpdate();
   dashGrid.margin(m);
   dashGrid.cellHeight(ch);
+  dashGrid.opts.maxRow = rows;
+  dashGrid.engine.maxRow = rows;
   dashGrid.batchUpdate(false);
   setTimeout(resizeAllCharts, 60);
 }
@@ -996,7 +1064,7 @@ function initDashboardGrid() {
   var gap = getThemeGap();
   var m = Math.round(gap / 2);
   var rows = getMaxRow(layout);
-  var ch = computeCellH(rows, m);
+  var ch = computeCellH(rows);
 
   try {
     dashGrid = GridStack.init({
