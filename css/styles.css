@@ -27,7 +27,7 @@
 body, body.theme-oneui {
   --bg:            #0d1017;
   --bg-grad:       #0d1017;
-  --glow-base:     #142040;
+  --glow-base:     #2a4070;
   --surface:       #171c28;
   --surface-hi:    #1e2538;
   --border:        rgba(255,255,255,.06);
@@ -77,7 +77,7 @@ body, body.theme-oneui {
 body.theme-glass {
   --bg:            #000000;
   --bg-grad:       #000000;
-  --glow-base:     #140e2a;
+  --glow-base:     #2a2250;
   --surface:       rgba(255,255,255,.04);
   --surface-hi:    rgba(255,255,255,.07);
   --border:        rgba(255,255,255,.10);
@@ -123,7 +123,7 @@ body.theme-glass {
 body.theme-webex {
   --bg:            #121212;
   --bg-grad:       #121212;
-  --glow-base:     #102430;
+  --glow-base:     #1e5068;
   --surface:       #1c1c1c;
   --surface-hi:    #222222;
   --border:        rgba(255,255,255,.08);
@@ -175,7 +175,7 @@ body.theme-webex {
 body.theme-fluent {
   --bg:            #1f1f1f;
   --bg-grad:       #1f1f1f;
-  --glow-base:     #162236;
+  --glow-base:     #2c4470;
   --surface:       #292929;
   --surface-hi:    #333333;
   --border:        rgba(255,255,255,.0837);
@@ -229,7 +229,7 @@ body.theme-fluent {
 body.theme-material {
   --bg:            #141218;
   --bg-grad:       #141218;
-  --glow-base:     #1a162a;
+  --glow-base:     #322a54;
   --surface:       #211f26;
   --surface-hi:    #2b2930;
   --border:        #49454f;
@@ -283,7 +283,7 @@ body.theme-material {
 body.theme-carbon {
   --bg:            #161616;
   --bg-grad:       #161616;
-  --glow-base:     #141c30;
+  --glow-base:     #283e64;
   --surface:       #262626;
   --surface-hi:    #393939;
   --border:        #393939;
