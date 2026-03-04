@@ -25,7 +25,6 @@ function getThemeColors() {
   var cs = getComputedStyle(document.body);
   var rSm = parseInt(cs.getPropertyValue('--radius-sm'), 10);
   return {
-    muted:     cs.getPropertyValue('--muted').trim(),
     text:      cs.getPropertyValue('--text').trim(),
     accent:    cs.getPropertyValue('--accent').trim(),
     surface:   cs.getPropertyValue('--surface').trim(),
@@ -38,31 +37,6 @@ function getThemeColors() {
     font:      cs.getPropertyValue('--font').trim(),
     fontMono:  cs.getPropertyValue('--font-mono').trim(),
   };
-}
-
-// ─── Glow background animation ──────────────────────
-var _glowTimer = null;
-var _glowIdx = 0;
-
-function startGlow() {
-  if (_glowTimer) clearInterval(_glowTimer);
-  var el = document.getElementById('glow-bg');
-  if (!el) return;
-  var cs = getComputedStyle(document.body);
-  var colors = [
-    cs.getPropertyValue('--glow-a').trim(),
-    cs.getPropertyValue('--glow-b').trim(),
-    cs.getPropertyValue('--glow-c').trim()
-  ];
-  _glowIdx = 0;
-  el.style.transition = 'none';
-  el.style.backgroundColor = colors[0];
-  el.offsetHeight;
-  el.style.transition = 'background-color 4s ease';
-  _glowTimer = setInterval(function() {
-    _glowIdx = (_glowIdx + 1) % colors.length;
-    el.style.backgroundColor = colors[_glowIdx];
-  }, 4000);
 }
 
 // ─── External tooltip handler (frosted glass) ───────
@@ -130,7 +104,6 @@ function applyTheme(themeId) {
 
   refreshAllChartColors();
   syncGridToTheme();
-  startGlow();
 }
 
 function refreshAllChartColors() {
@@ -141,10 +114,10 @@ function refreshAllChartColors() {
   Object.keys(rangeCharts).forEach(function(k) { allCharts.push(rangeCharts[k]); });
 
   allCharts.forEach(function(chart) {
-    chart.options.scales.x.ticks.color = tc.muted;
+    chart.options.scales.x.ticks.color = tc.text;
     chart.options.scales.x.ticks.font.family = tc.font;
     chart.options.scales.x.grid.color = tc.gridLine;
-    chart.options.scales.y.ticks.color = tc.muted;
+    chart.options.scales.y.ticks.color = tc.text;
     chart.options.scales.y.ticks.font.family = tc.fontMono;
     chart.options.scales.y.grid.color = tc.gridLine;
     chart.options.plugins.tooltip.enabled = false;
@@ -495,9 +468,9 @@ function chartOptions(xPadding) {
       }
     },
     scales: {
-      x: { ticks: { color: tc.muted, maxRotation: 0, autoSkipPadding: xPadding || 30, font: { size: 10, family: tc.font } }, grid: { color: tc.gridLine } },
+      x: { ticks: { color: tc.text, maxRotation: 0, autoSkipPadding: xPadding || 30, font: { size: 12, family: tc.font } }, grid: { color: tc.gridLine } },
       y: {
-        ticks: { color: tc.muted, font: { size: 10, family: tc.fontMono }, callback: function(v) { return '$' + (v >= 100 ? Math.round(v) : v.toFixed(2)); } },
+        ticks: { color: tc.text, font: { size: 12, family: tc.fontMono }, callback: function(v) { return '$' + (v >= 100 ? Math.round(v) : v.toFixed(2)); } },
         grid: { color: tc.gridLine }
       }
     }
@@ -616,7 +589,7 @@ async function fetchHourly() {
     $('hourly-loader').innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
         '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load live stock data</div>' +
-        '<div style="font-size:12px;color:var(--muted);">Retrying\u2026</div>' +
+        '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
       '</div>';
     loadDemoHourlyData();
   }
@@ -704,7 +677,7 @@ function loadDemoHourlyData() {
   $('stock-change').innerHTML =
     '<span style="color:' + (up ? 'var(--green)' : 'var(--red)') + '">' +
       (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%)' +
-    '</span> <span style="color:var(--muted);">(demo)</span>';
+    '</span> <span style="color:var(--text);">(demo)</span>';
 
   var stats = computeStats(data, 1);
   renderStats('hourly-stats', stats, true);
@@ -762,7 +735,7 @@ async function fetchStockWithFallback() {
     $('stock-loader').innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
         '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
-        '<div style="font-size:12px;color:var(--muted);">Retrying\u2026</div>' +
+        '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
       '</div>';
   }
 }
@@ -883,7 +856,7 @@ async function fetchRange(cfg) {
     $(cfg.loaderId).innerHTML =
       '<div style="text-align:center;line-height:1.5">' +
         '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
-        '<div style="font-size:12px;color:var(--muted);">Retrying&hellip;</div>' +
+        '<div style="font-size:12px;color:var(--text);">Retrying&hellip;</div>' +
       '</div>';
   }
 }

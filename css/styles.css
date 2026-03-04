@@ -11,7 +11,7 @@
    DESIGN TOKEN REFERENCE
    ─────────────────────────────────────────────
    Palette        --bg  --bg-grad  --surface  --surface-hi  --border
-                  --text  --muted  --accent  --accent-glow
+                  --text  --accent  --accent-glow
                   --green  --green-glow  --red
    Corners        --radius-xs  --radius-sm  --radius-md  --radius-lg
                   --radius-pill  --radius-btn
@@ -27,14 +27,11 @@
 body, body.theme-oneui {
   --bg:            #0d1017;
   --bg-grad:       #0d1017;
-  --glow-a:        #0d1017;
-  --glow-b:        #183a90;
-  --glow-c:        #3a1870;
+  --glow-base:     #142040;
   --surface:       #171c28;
   --surface-hi:    #1e2538;
   --border:        rgba(255,255,255,.06);
   --text:          #edf0f7;
-  --muted:         #8a96aa;
   --accent:        #5b9bf4;
   --accent-glow:   rgba(91,155,244,.35);
   --green:         #3ddc84;
@@ -80,14 +77,11 @@ body, body.theme-oneui {
 body.theme-glass {
   --bg:            #000000;
   --bg-grad:       #000000;
-  --glow-a:        #000000;
-  --glow-b:        #22144a;
-  --glow-c:        #0e2240;
+  --glow-base:     #140e2a;
   --surface:       rgba(255,255,255,.04);
   --surface-hi:    rgba(255,255,255,.07);
   --border:        rgba(255,255,255,.10);
   --text:          #f5f5f7;
-  --muted:         #98989d;
   --accent:        #0a84ff;
   --accent-glow:   rgba(10,132,255,.4);
   --green:         #30d158;
@@ -102,9 +96,9 @@ body.theme-glass {
   --shadow:        0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.05) inset;
   --card-bg:       linear-gradient(175deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.018) 100%);
   --card-border:   1px solid rgba(255,255,255,.12);
-  --card-blur:     blur(48px) saturate(1.7);
+  --card-blur:     blur(24px);
   --hdr-bg:        linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.01) 100%);
-  --hdr-blur:      blur(48px) saturate(1.5);
+  --hdr-blur:      blur(24px);
   --ftr-bg:        linear-gradient(0deg, rgba(255,255,255,.02) 0%, transparent 100%);
   --pill-bg:       rgba(255,255,255,.06);
   --pill-blur:     blur(16px);
@@ -129,14 +123,11 @@ body.theme-glass {
 body.theme-webex {
   --bg:            #121212;
   --bg-grad:       #121212;
-  --glow-a:        #121212;
-  --glow-b:        #146080;
-  --glow-c:        #0e4860;
+  --glow-base:     #102430;
   --surface:       #1c1c1c;
   --surface-hi:    #222222;
   --border:        rgba(255,255,255,.08);
   --text:          #f0f0f0;
-  --muted:         #949494;
   --accent:        #07c1e4;
   --accent-glow:   rgba(7,193,228,.35);
   --green:         #1db954;
@@ -184,14 +175,11 @@ body.theme-webex {
 body.theme-fluent {
   --bg:            #1f1f1f;
   --bg-grad:       #1f1f1f;
-  --glow-a:        #1f1f1f;
-  --glow-b:        #244a88;
-  --glow-c:        #443468;
+  --glow-base:     #162236;
   --surface:       #292929;
   --surface-hi:    #333333;
   --border:        rgba(255,255,255,.0837);
   --text:          #ffffff;
-  --muted:         #adadad;
   --accent:        #60cdff;
   --accent-glow:   rgba(96,205,255,.35);
   --green:         #6ccb5f;
@@ -206,7 +194,7 @@ body.theme-fluent {
   --shadow:        0 2px 4px rgba(0,0,0,.28), 0 0 2px rgba(0,0,0,.24);
   --card-bg:       rgba(41,41,41,.7);
   --card-border:   1px solid rgba(255,255,255,.0837);
-  --card-blur:     blur(20px) saturate(1.25);
+  --card-blur:     blur(20px);
   --hdr-bg:        rgba(31,31,31,.85);
   --hdr-blur:      blur(20px);
   --ftr-bg:        rgba(31,31,31,.6);
@@ -241,14 +229,11 @@ body.theme-fluent {
 body.theme-material {
   --bg:            #141218;
   --bg-grad:       #141218;
-  --glow-a:        #141218;
-  --glow-b:        #382278;
-  --glow-c:        #224a2e;
+  --glow-base:     #1a162a;
   --surface:       #211f26;
   --surface-hi:    #2b2930;
   --border:        #49454f;
   --text:          #e6e0e9;
-  --muted:         #cac4d0;
   --accent:        #d0bcff;
   --accent-glow:   rgba(208,188,255,.3);
   --green:         #7dd077;
@@ -298,16 +283,13 @@ body.theme-material {
 body.theme-carbon {
   --bg:            #161616;
   --bg-grad:       #161616;
-  --glow-a:        #161616;
-  --glow-b:        #184078;
-  --glow-c:        #2a2258;
+  --glow-base:     #141c30;
   --surface:       #262626;
   --surface-hi:    #393939;
   --border:        #393939;
   --text:          #f4f4f4;
-  --muted:         #c6c6c6;
-  --accent:        #0f62fe;
-  --accent-glow:   rgba(15,98,254,.35);
+  --accent:        #4589ff;
+  --accent-glow:   rgba(69,137,255,.35);
   --green:         #42be65;
   --green-glow:    rgba(66,190,101,.45);
   --red:           #fa4d56;
@@ -326,7 +308,7 @@ body.theme-carbon {
   --ftr-bg:        rgba(22,22,22,.7);
   --pill-bg:       #393939;
   --pill-blur:     none;
-  --skel-mid:      #353535;
+  --skel-mid:      rgba(69,137,255,.08);
   --grid-line:     #393939;
   --pad-card:      16px;
   --pad-hdr:       0 16px;
@@ -344,21 +326,15 @@ body.theme-carbon {
 }
 
 /* ═══════════════════════════════════════════════
-   ANIMATED GLOW BACKGROUND
-   Multiple blurred spots positioned in corners and
-   random areas. JS cycles their colors independently.
+   GLOW BACKGROUND
+   Static brand-colored backdrop behind all content.
    ═══════════════════════════════════════════════ */
 #glow-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-color: var(--glow-a);
-  transition: background-color 4s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #glow-bg { transition: none; }
+  background-color: var(--glow-base);
 }
 
 /* ═══════════════════════════════════════════════
@@ -436,7 +412,7 @@ header {
 .theme-dropdown {
   appearance: none;
   background-color: var(--surface);
-  color: var(--muted);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   padding: 6px 28px 6px 12px;
@@ -458,7 +434,7 @@ header {
 
 .reset-layout-btn {
   background: var(--surface);
-  color: var(--muted);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   padding: 4px 8px;
@@ -508,8 +484,8 @@ header {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 32px rgba(0,0,0,.5);
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   padding: 10px 14px;
   color: var(--text);
   font-family: var(--font);
@@ -547,8 +523,8 @@ header {
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 32px rgba(0,0,0,.5);
   z-index: 9999;
-  backdrop-filter: blur(24px) saturate(1.3);
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   overflow: hidden;
 }
 
@@ -566,7 +542,7 @@ header {
   outline: none;
 }
 
-.ticker-search::placeholder { color: var(--muted); }
+.ticker-search::placeholder { color: var(--text); opacity: .6; }
 
 .ticker-list {
   max-height: 260px;
@@ -580,11 +556,11 @@ header {
 }
 
 .ticker-section-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--muted);
+  color: var(--text);
   padding: 8px 12px 4px;
 }
 
@@ -613,24 +589,23 @@ header {
 
 .ticker-item-name {
   flex: 1;
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ticker-item-exch {
-  font-size: 10px;
-  color: var(--muted);
-  opacity: .6;
+  font-size: 12px;
+  color: var(--text);
 }
 
 .ticker-item-action {
   appearance: none;
   background: none;
   border: none;
-  color: var(--muted);
+  color: var(--text);
   font-size: 16px;
   cursor: pointer;
   padding: 0 2px;
@@ -655,7 +630,7 @@ header {
 .ticker-empty {
   padding: 16px 12px;
   text-align: center;
-  color: var(--muted);
+  color: var(--text);
   font-size: 12px;
 }
 
@@ -685,7 +660,7 @@ header {
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
   border-left: 1px solid var(--border);
   padding-left: 14px;
 }
@@ -785,7 +760,7 @@ main.grid-stack {
 }
 
 .badge {
-  font-size: 11px;
+  font-size: 12px;
   padding: 3px 10px;
   border-radius: var(--radius-pill);
   font-weight: 700;
@@ -797,7 +772,7 @@ main.grid-stack {
 
 .card-subtitle {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
   margin-bottom: 8px;
   line-height: 1.4;
   flex-shrink: 0;
@@ -816,19 +791,18 @@ main.grid-stack {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   padding: 3px 9px;
   border-radius: var(--radius-pill);
   background: var(--pill-bg);
-  color: var(--muted);
+  color: var(--text);
   white-space: nowrap;
   backdrop-filter: var(--pill-blur);
 }
 
 .stat-pill .stat-label {
   font-weight: 500;
-  opacity: .75;
 }
 
 .stat-pill.stat-up {
@@ -912,8 +886,8 @@ footer {
   z-index: 2;
   flex-shrink: 0;
   text-align: center;
-  font-size: 11px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--text);
   padding: 8px 24px;
   border-top: 1px solid var(--border);
   background: var(--ftr-bg);
@@ -952,13 +926,13 @@ body.theme-glass .card:hover {
 }
 
 body.theme-glass .stat-pill {
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
 }
 
 body.theme-glass .chart-tooltip {
   background: rgba(255,255,255,.08);
-  backdrop-filter: blur(40px) saturate(1.8) brightness(1.1);
-  -webkit-backdrop-filter: blur(40px) saturate(1.8) brightness(1.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 8px 32px rgba(0,0,0,.4),
               inset 0 .5px 0 rgba(255,255,255,.15);
@@ -1073,7 +1047,7 @@ body.theme-carbon .stat-pill.stat-down {
 }
 
 body.theme-carbon .stat-pill.stat-prior {
-  background: rgba(15,98,254,.16);
+  background: rgba(69,137,255,.16);
 }
 
 body.theme-carbon .card-header h2 {
@@ -1153,7 +1127,7 @@ body.theme-carbon footer {
   margin-top: 16px;
   font-family: var(--font, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 13px;
-  color: var(--muted, #8a96aa);
+  color: var(--text, #edf0f7);
   letter-spacing: .5px;
 }
 
