@@ -94,14 +94,14 @@ body.theme-glass {
   --radius-pill:   100px;
   --radius-btn:    10px;
   --shadow:        0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.05) inset;
-  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.018) 100%);
+  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
   --card-border:   1px solid rgba(255,255,255,.12);
-  --card-blur:     blur(24px);
-  --hdr-bg:        linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.01) 100%);
-  --hdr-blur:      blur(24px);
-  --ftr-bg:        linear-gradient(0deg, rgba(255,255,255,.02) 0%, transparent 100%);
-  --pill-bg:       rgba(255,255,255,.06);
-  --pill-blur:     blur(16px);
+  --card-blur:     none;
+  --hdr-bg:        rgba(255,255,255,.08);
+  --hdr-blur:      none;
+  --ftr-bg:        rgba(255,255,255,.06);
+  --pill-bg:       rgba(255,255,255,.08);
+  --pill-blur:     none;
   --skel-mid:      rgba(255,255,255,.07);
   --grid-line:     rgba(255,255,255,.04);
   --pad-card:      12px 18px;
@@ -913,14 +913,10 @@ body.theme-glass .card:hover {
   box-shadow: 0 6px 28px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.06) inset;
 }
 
-body.theme-glass .stat-pill {
-  backdrop-filter: blur(12px);
-}
-
 body.theme-glass .chart-tooltip {
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(255,255,255,.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 8px 32px rgba(0,0,0,.4),
               inset 0 .5px 0 rgba(255,255,255,.15);
