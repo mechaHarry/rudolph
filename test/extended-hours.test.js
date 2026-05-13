@@ -186,3 +186,92 @@ test('getSessionQuote does not show stale extended datapoint when regular market
   assert.equal(quote.extendedPrice, null);
   assert.equal(app.buildHeaderPriceHtml(quote), '$103.45');
 });
+
+test('buildStatsHtml renders only min and max graph legend items', () => {
+  const app = loadApp();
+
+  const html = app.buildStatsHtml({
+    diff: 4,
+    pct: 2,
+    growPct: 80,
+    shrinkPct: 20,
+    up: true,
+    min: 99.12,
+    max: 106.34
+  });
+
+  assert.equal(
+    html,
+    '<span class="stat-pill"><span class="stat-label">Min</span> $99.12</span>' +
+      '<span class="stat-pill"><span class="stat-label">Max</span> $106.34</span>'
+  );
+  assert.equal(html.includes('\u0394'), false);
+  assert.equal(html.includes('\u25B2'), false);
+  assert.equal(html.includes('\u25BC'), false);
+  assert.equal(html.includes('Prior'), false);
+});
+
+test('computeStats includes extended-hours prices in min and max when mega data exists', () => {
+  const app = loadApp();
+
+  app.__setMegaDataForTest({
+    timestamps: [Date.now() / 1000 - 60],
+    highs: [105],
+    lows: [100],
+    closes: [102]
+  });
+
+  const stats = app.computeStats([99.5, 102, 107.25], 1);
+
+  assert.equal(stats.min, 99.5);
+  assert.equal(stats.max, 107.25);
+});
+
+test('closed widget helpers persist hidden widget ids and report reinsertion options', () => {
+  const app = loadApp();
+  const storage = {};
+
+  app.saveClosedWidgetIds(['stock', 'month'], storage);
+
+  assert.deepEqual(Array.from(app.loadClosedWidgetIds(storage)), ['stock', 'month']);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(app.getClosedWidgetOptions(['stock', 'unknown'], [
+      { id: 'hourly', title: 'Hour' },
+      { id: 'stock', title: 'Today' }
+    ]))),
+    [{ id: 'stock', title: 'Today' }]
+  );
+});
+
+test('buildGridOptions enables floating no-gravity layout behavior', () => {
+  const app = loadApp();
+
+  const options = app.buildGridOptions({ cellHeight: 72, margin: 4, rows: 9 });
+
+  assert.equal(options.float, true);
+  assert.equal(options.cellHeight, 72);
+  assert.equal(options.maxRow, 9);
+  assert.equal(options.handle, '.card-header');
+});
+
+test('getOpenWidgetLayout excludes closed widgets before grid startup', () => {
+  const app = loadApp();
+  const layout = [
+    { id: 'hourly', x: 0, y: 0, w: 12, h: 3 },
+    { id: 'stock', x: 6, y: 3, w: 6, h: 3 },
+    { id: 'month', x: 6, y: 3, w: 6, h: 3 },
+    { id: 'year', x: 0, y: 3, w: 6, h: 3 },
+    { id: 'alltime', x: 0, y: 6, w: 12, h: 3 }
+  ];
+
+  const openLayout = app.getOpenWidgetLayout(layout, ['hourly', 'month']);
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(openLayout)),
+    [
+      { id: 'stock', x: 6, y: 3, w: 6, h: 3 },
+      { id: 'year', x: 0, y: 3, w: 6, h: 3 },
+      { id: 'alltime', x: 0, y: 6, w: 12, h: 3 }
+    ]
+  );
+});
