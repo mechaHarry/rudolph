@@ -35,6 +35,10 @@
     </svg>
     <h1>Rudolph</h1>
   </div>
+  <div class="hdr-meta">
+    <span><span class="live-dot"></span>&nbsp; Live</span>
+    <span id="clock"></span>
+  </div>
 
   <div class="hdr-ticker">
     <div class="ticker-combo" id="ticker-combo">
@@ -42,6 +46,7 @@
       <div class="ticker-panel" id="ticker-panel">
         <input type="text" class="ticker-search" id="ticker-search" placeholder="Search stocks&hellip;" autocomplete="off">
         <div class="ticker-list" id="ticker-list"></div>
+        <div class="ticker-panel-footer">Stock data from Yahoo Finance &bull; Auto-refreshes every 1s</div>
       </div>
     </div>
   </div>
@@ -51,20 +56,23 @@
     <span class="stock-change" id="stock-change"><span class="skel skel-change"></span></span>
   </div>
 
-  <div class="hdr-theme">
-    <select id="theme-select" class="theme-dropdown">
-      <option value="oneui">Samsung OneUI</option>
-      <option value="glass">Apple Liquid Glass</option>
-      <option value="webex">Cisco Webex</option>
-      <option value="fluent">Windows Fluent</option>
-      <option value="material">Google Material</option>
-      <option value="carbon">IBM Carbon</option>
-    </select>
+  <div class="hdr-controls">
     <button id="reset-layout-btn" class="reset-layout-btn" type="button" title="Reset grid layout">&#x21BB;</button>
-  </div>
-  <div class="hdr-meta">
-    <span><span class="live-dot"></span>&nbsp; Live</span>
-    <span id="clock"></span>
+    <div class="widget-menu-wrap" id="widget-menu-wrap">
+      <button id="add-widget-btn" class="icon-btn" type="button" title="Add widget" aria-label="Add widget">+</button>
+      <div class="widget-menu" id="widget-menu"></div>
+    </div>
+    <div class="theme-menu-wrap" id="theme-menu-wrap">
+      <button id="theme-menu-btn" class="icon-btn" type="button" title="Theme" aria-label="Theme">&#9881;</button>
+      <div class="theme-menu" id="theme-menu" role="menu">
+        <button type="button" data-theme="oneui" role="menuitemradio">Samsung OneUI</button>
+        <button type="button" data-theme="glass" role="menuitemradio">Apple Liquid Glass</button>
+        <button type="button" data-theme="webex" role="menuitemradio">Cisco Webex</button>
+        <button type="button" data-theme="fluent" role="menuitemradio">Windows Fluent</button>
+        <button type="button" data-theme="material" role="menuitemradio">Google Material</button>
+        <button type="button" data-theme="carbon" role="menuitemradio">IBM Carbon</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -75,7 +83,8 @@
     <div class="grid-stack-item-content card" id="hourly-card">
       <div class="card-header">
         <h2>Hour &mdash; Per Minute</h2>
-        <div class="card-stats" id="hourly-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <div class="card-stats" id="hourly-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <button class="widget-close-btn" type="button" data-widget-id="hourly" title="Close widget" aria-label="Close Hour widget">&times;</button>
       </div>
       <div class="chart-wrap"><div class="skel skel-chart" id="hourly-loader"></div><canvas id="hourlyChart"></canvas></div>
     </div>
@@ -85,7 +94,8 @@
     <div class="grid-stack-item-content card" id="stock-card">
       <div class="card-header">
         <h2>Today &mdash; Per Minute</h2>
-        <div class="card-stats" id="today-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <div class="card-stats" id="today-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <button class="widget-close-btn" type="button" data-widget-id="stock" title="Close widget" aria-label="Close Today widget">&times;</button>
       </div>
       <div class="chart-wrap"><div class="skel skel-chart" id="stock-loader"></div><canvas id="stockChart"></canvas></div>
     </div>
@@ -95,7 +105,8 @@
     <div class="grid-stack-item-content card">
       <div class="card-header">
         <h2>1 Month &mdash; Per Day</h2>
-        <div class="card-stats" id="month-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <div class="card-stats" id="month-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <button class="widget-close-btn" type="button" data-widget-id="month" title="Close widget" aria-label="Close 1 Month widget">&times;</button>
       </div>
       <div class="chart-wrap"><div class="skel skel-chart" id="month-loader"></div><canvas id="monthChart"></canvas></div>
     </div>
@@ -105,7 +116,8 @@
     <div class="grid-stack-item-content card">
       <div class="card-header">
         <h2>1 Year &mdash; Per Day</h2>
-        <div class="card-stats" id="year-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <div class="card-stats" id="year-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <button class="widget-close-btn" type="button" data-widget-id="year" title="Close widget" aria-label="Close 1 Year widget">&times;</button>
       </div>
       <div class="chart-wrap"><div class="skel skel-chart" id="year-loader"></div><canvas id="yearChart"></canvas></div>
     </div>
@@ -115,17 +127,14 @@
     <div class="grid-stack-item-content card">
       <div class="card-header">
         <h2>All-Time &mdash; Per Month</h2>
-        <div class="card-stats" id="alltime-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <div class="card-stats" id="alltime-stats"><span class="skel skel-pill"></span><span class="skel skel-pill"></span></div>
+        <button class="widget-close-btn" type="button" data-widget-id="alltime" title="Close widget" aria-label="Close All-Time widget">&times;</button>
       </div>
       <div class="chart-wrap"><div class="skel skel-chart" id="alltime-loader"></div><canvas id="alltimeChart"></canvas></div>
     </div>
   </div>
 
 </main>
-
-<footer>
-  Stock: Yahoo Finance &bull; Auto-refreshes every 1s
-</footer>
 
 <script src="js/chart.umd.min.js"></script>
 <script src="js/gridstack.min.js"></script>
