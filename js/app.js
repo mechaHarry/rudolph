@@ -101,9 +101,20 @@ function applyTheme(themeId) {
 
   var sel = $('theme-select');
   if (sel && sel.value !== themeId) sel.value = themeId;
+  updateThemeMenu(themeId);
 
   refreshAllChartColors();
   syncGridToTheme();
+}
+
+function updateThemeMenu(themeId) {
+  if (!document.querySelectorAll) return;
+  var buttons = document.querySelectorAll('[data-theme]');
+  buttons.forEach(function(btn) {
+    var active = btn.dataset.theme === themeId;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-checked', active ? 'true' : 'false');
+  });
 }
 
 function refreshAllChartColors() {
@@ -243,18 +254,20 @@ function resetDashboard() {
 
   ['hourly-loader','stock-loader','month-loader','year-loader','alltime-loader'].forEach(function(id) {
     var el = $(id);
+    if (!el) return;
     el.style.display = '';
     el.className = 'skel skel-chart';
     el.innerHTML = '';
   });
 
-  var pills7 = new Array(8).join('<span class="skel skel-pill"></span>');
-  var pills6 = new Array(7).join('<span class="skel skel-pill"></span>');
-  ['hourly-stats','today-stats','month-stats','year-stats'].forEach(function(id) { $(id).innerHTML = pills7; });
-  $('alltime-stats').innerHTML = pills6;
+  var pills2 = new Array(3).join('<span class="skel skel-pill"></span>');
+  ['hourly-stats','today-stats','month-stats','year-stats','alltime-stats'].forEach(function(id) {
+    var el = $(id);
+    if (el) el.innerHTML = pills2;
+  });
 
-  $('stock-price').innerHTML  = '<span class="skel skel-price"></span>';
-  $('stock-change').innerHTML = '<span class="skel skel-change"></span>';
+  if ($('stock-price')) $('stock-price').innerHTML  = '<span class="skel skel-price"></span>';
+  if ($('stock-change')) $('stock-change').innerHTML = '<span class="skel skel-change"></span>';
 
   fetchMegaData();
   fetchHourly();
@@ -438,6 +451,30 @@ function computeStatsFromMega(daysBack) {
   };
 }
 
+function minMaxFromDataArrays(dataArrays) {
+  var lo = Infinity, hi = -Infinity;
+  if (!Array.isArray(dataArrays)) return { min: lo, max: hi };
+  for (var i = 0; i < dataArrays.length; i++) {
+    var arr = dataArrays[i];
+    if (!arr) continue;
+    for (var j = 0; j < arr.length; j++) {
+      var v = arr[j];
+      if (v !== null && v !== undefined && isFinite(v)) {
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+    }
+  }
+  return { min: lo, max: hi };
+}
+
+function mergeStatsMinMax(stats, dataArrays) {
+  var mm = minMaxFromDataArrays(dataArrays);
+  if (isFinite(mm.min)) stats.min = isFinite(stats.min) ? Math.min(stats.min, mm.min) : mm.min;
+  if (isFinite(mm.max)) stats.max = isFinite(stats.max) ? Math.max(stats.max, mm.max) : mm.max;
+  return stats;
+}
+
 function getBounds(daysBack, dataArrays) {
   var lo = Infinity, hi = -Infinity;
 
@@ -499,7 +536,8 @@ function firstLast(data) {
 
 // Grow/shrink always from chart data (native granularity).
 // Diff/pct/min/max/up from mega when available, chart data as fallback.
-function computeStats(data, daysBack) {
+function computeStats(data, daysBack, extraDataArrays) {
+  var minMaxArrays = [data].concat(extraDataArrays || []);
   var growing = 0, shrinking = 0, segments = 0;
   for (var i = 1; i < data.length; i++) {
     if (data[i] !== null && data[i - 1] !== null) {
@@ -516,7 +554,7 @@ function computeStats(data, daysBack) {
     if (mega) {
       mega.growPct = growPct;
       mega.shrinkPct = shrinkPct;
-      return mega;
+      return mergeStatsMinMax(mega, minMaxArrays);
     }
   }
 
@@ -535,32 +573,23 @@ function computeStats(data, daysBack) {
     }
   }
 
-  return { diff: diff, pct: pct, growPct: growPct, shrinkPct: shrinkPct, up: diff >= 0, min: lo, max: hi };
+  return mergeStatsMinMax(
+    { diff: diff, pct: pct, growPct: growPct, shrinkPct: shrinkPct, up: diff >= 0, min: lo, max: hi },
+    minMaxArrays
+  );
 }
 
-// Render stats pills into a container element, and update the badge
-function renderStats(statsElId, stats, hasPrior) {
+function buildStatsHtml(stats) {
+  if (!stats) return '';
+  return (isFinite(stats.min) ? '<span class="stat-pill"><span class="stat-label">Min</span> $' + stats.min.toFixed(2) + '</span>' : '') +
+    (isFinite(stats.max) ? '<span class="stat-pill"><span class="stat-label">Max</span> $' + stats.max.toFixed(2) + '</span>' : '');
+}
+
+// Render min/max graph pills into a container element.
+function renderStats(statsElId, stats) {
   var el = $(statsElId);
   if (!el) return;
-  if (!megaData) return;
-
-  el.innerHTML =
-    (hasPrior ? '<span class="stat-pill stat-prior"><span class="stat-label">\u2500\u2500</span> Prior</span>' : '') +
-    '<span class="stat-pill ' + (stats.up ? 'stat-up' : 'stat-down') + '">' +
-      '<span class="stat-label">\u0394</span> ' + stats.diff.toFixed(2) +
-    '</span>' +
-    '<span class="stat-pill ' + (stats.up ? 'stat-up' : 'stat-down') + '">' +
-      stats.pct.toFixed(2) + '%' +
-    '</span>' +
-    '<span class="stat-pill stat-up">' +
-      '<span class="stat-label">\u25B2</span> ' + stats.growPct.toFixed(0) + '%' +
-    '</span>' +
-    '<span class="stat-pill stat-down">' +
-      '<span class="stat-label">\u25BC</span> ' + stats.shrinkPct.toFixed(0) + '%' +
-    '</span>' +
-    (isFinite(stats.min) ? '<span class="stat-pill"><span class="stat-label">Min</span> $' + stats.min.toFixed(2) + '</span>' : '') +
-    (isFinite(stats.max) ? '<span class="stat-pill"><span class="stat-label">Max</span> $' + stats.max.toFixed(2) + '</span>' : '');
-
+  el.innerHTML = buildStatsHtml(stats);
 }
 
 // ─── Ghost dataset helper ────────────────────────────
@@ -789,11 +818,14 @@ async function fetchHourly() {
   if (json && json.chart && json.chart.result) {
     processHourlyData(json);
   } else {
-    $('hourly-loader').innerHTML =
-      '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load live stock data</div>' +
-        '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
-      '</div>';
+    var loader = $('hourly-loader');
+    if (loader) {
+      loader.innerHTML =
+        '<div style="text-align:center;line-height:1.5">' +
+          '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load live stock data</div>' +
+          '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
+        '</div>';
+    }
     loadDemoHourlyData();
   }
 }
@@ -851,7 +883,7 @@ async function processHourlyData(json) {
 
   await yieldFrame();
   renderHourlyChart(labels, data, prevClose, priorData, extendedData);
-  $('hourly-loader').style.display = 'none';
+  if ($('hourly-loader')) $('hourly-loader').style.display = 'none';
   markChartLoaded('hourly');
 }
 
@@ -882,8 +914,8 @@ function loadDemoHourlyData() {
   var pct = ((diff / prevClose) * 100).toFixed(2);
   var up = diff >= 0;
 
-  $('stock-price').textContent = '$' + price.toFixed(2);
-  $('stock-change').innerHTML =
+  if ($('stock-price')) $('stock-price').textContent = '$' + price.toFixed(2);
+  if ($('stock-change')) $('stock-change').innerHTML =
     '<span style="color:' + (up ? 'var(--green)' : 'var(--red)') + '">' +
       (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%)' +
     '</span> <span style="color:var(--text);">(demo)</span>';
@@ -893,7 +925,7 @@ function loadDemoHourlyData() {
 
   updateNoseColor(up);
   renderHourlyChart(labels, data, prevClose, priorData);
-  $('hourly-loader').style.display = 'none';
+  if ($('hourly-loader')) $('hourly-loader').style.display = 'none';
   markChartLoaded('hourly');
 }
 
@@ -917,7 +949,9 @@ function renderHourlyChart(labels, data, prevClose, priorData, extendedData) {
     var opts = chartOptions(30);
     opts.scales.y.min = bounds.lo;
     opts.scales.y.max = bounds.hi;
-    var ctx = $('hourlyChart').getContext('2d');
+    var canvas = $('hourlyChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
     hourlyChart = new Chart(ctx, {
       type: 'line',
       data: { labels: labels, datasets: datasets },
@@ -930,15 +964,22 @@ function renderHourlyChart(labels, data, prevClose, priorData, extendedData) {
 var stockChart;
 
 async function fetchStockWithFallback() {
+  if (loadClosedWidgetIds().indexOf('stock') !== -1) {
+    markChartLoaded('stock');
+    return;
+  }
   var json = await yahooFetch(chartUrl('range=5d&interval=1m&includePrePost=true'));
   if (json && json.chart && json.chart.result) {
     processStockData(json);
   } else {
-    $('stock-loader').innerHTML =
-      '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
-        '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
-      '</div>';
+    var loader = $('stock-loader');
+    if (loader) {
+      loader.innerHTML =
+        '<div style="text-align:center;line-height:1.5">' +
+          '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
+          '<div style="font-size:12px;color:var(--text);">Retrying\u2026</div>' +
+        '</div>';
+    }
   }
 }
 
@@ -976,7 +1017,7 @@ async function processStockData(json) {
 
   await yieldFrame();
   renderStockChart(labels, data, prevClose, priorData, extendedData);
-  $('stock-loader').style.display = 'none';
+  if ($('stock-loader')) $('stock-loader').style.display = 'none';
   markChartLoaded('stock');
 }
 
@@ -1000,7 +1041,9 @@ function renderStockChart(labels, data, prevClose, priorData, extendedData) {
     var opts = chartOptions(30);
     opts.scales.y.min = bounds.lo;
     opts.scales.y.max = bounds.hi;
-    var ctx = $('stockChart').getContext('2d');
+    var canvas = $('stockChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
     stockChart = new Chart(ctx, {
       type: 'line',
       data: { labels: labels, datasets: datasets },
@@ -1050,14 +1093,17 @@ async function fetchRange(cfg) {
     renderStats(cfg.statsId, stats, cfg.hasPrior);
     await yieldFrame();
     renderRangeChart(cfg, labels, data, priorData);
-    $(cfg.loaderId).style.display = 'none';
+    if ($(cfg.loaderId)) $(cfg.loaderId).style.display = 'none';
     markChartLoaded(cfg.id);
   } else {
-    $(cfg.loaderId).innerHTML =
-      '<div style="text-align:center;line-height:1.5">' +
-        '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
-        '<div style="font-size:12px;color:var(--text);">Retrying&hellip;</div>' +
-      '</div>';
+    var loader = $(cfg.loaderId);
+    if (loader) {
+      loader.innerHTML =
+        '<div style="text-align:center;line-height:1.5">' +
+          '<div style="color:var(--red);margin-bottom:6px;font-size:13px;">Unable to load data</div>' +
+          '<div style="font-size:12px;color:var(--text);">Retrying&hellip;</div>' +
+        '</div>';
+    }
   }
 }
 
@@ -1084,7 +1130,9 @@ function renderRangeChart(cfg, labels, data, priorData) {
     var opts = chartOptions(40);
     opts.scales.y.min = bounds.lo;
     opts.scales.y.max = bounds.hi;
-    var ctx = $(cfg.canvasId).getContext('2d');
+    var canvas = $(cfg.canvasId);
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
     rangeCharts[cfg.id] = new Chart(ctx, {
       type: 'line',
       data: { labels: labels, datasets: datasets },
@@ -1094,7 +1142,11 @@ function renderRangeChart(cfg, labels, data, priorData) {
 }
 
 function fetchAllRanges() {
-  ranges.forEach(function(cfg) { fetchRange(cfg); });
+  var closed = loadClosedWidgetIds();
+  ranges.forEach(function(cfg) {
+    if (closed.indexOf(cfg.id) !== -1) markChartLoaded(cfg.id);
+    else fetchRange(cfg);
+  });
 }
 
 // ─── Refresh Interval Setting ────────────────────────
@@ -1140,6 +1192,7 @@ function dismissLoader() {
 
 // ─── Gridstack Dashboard ─────────────────────────────
 var GRID_STORAGE_KEY = 'rudolph-grid-layout';
+var CLOSED_WIDGETS_STORAGE_KEY = 'rudolph-closed-widgets';
 var GRID_VERSION = 5;
 var dashGrid = null;
 
@@ -1151,13 +1204,288 @@ var DEFAULT_LAYOUT = [
   { id: 'alltime', x: 6, y: 6, w: 6,  h: 3 },
 ];
 
+var WIDGETS = [
+  { id: 'hourly', title: 'Hour' },
+  { id: 'stock', title: 'Today' },
+  { id: 'month', title: '1 Month' },
+  { id: 'year', title: '1 Year' },
+  { id: 'alltime', title: 'All-Time' },
+];
+
+var DEFAULT_GRID_ROWS = 9;
+var detachedWidgetElements = {};
+
+function getStorageItem(storage, key) {
+  if (storage && typeof storage.getItem === 'function') return storage.getItem(key);
+  return storage ? storage[key] : null;
+}
+
+function setStorageItem(storage, key, value) {
+  if (storage && typeof storage.setItem === 'function') storage.setItem(key, value);
+  else if (storage) storage[key] = value;
+}
+
+function removeStorageItem(storage, key) {
+  if (storage && typeof storage.removeItem === 'function') storage.removeItem(key);
+  else if (storage) delete storage[key];
+}
+
+function widgetExists(id, widgets) {
+  widgets = widgets || WIDGETS;
+  return widgets.some(function(w) { return w.id === id; });
+}
+
+function normalizeWidgetIds(ids, widgets) {
+  var out = [];
+  if (!Array.isArray(ids)) return out;
+  ids.forEach(function(id) {
+    if (widgetExists(id, widgets) && out.indexOf(id) === -1) out.push(id);
+  });
+  return out;
+}
+
+function saveClosedWidgetIds(ids, storage) {
+  storage = storage || localStorage;
+  setStorageItem(storage, CLOSED_WIDGETS_STORAGE_KEY, JSON.stringify(normalizeWidgetIds(ids)));
+}
+
+function loadClosedWidgetIds(storage) {
+  storage = storage || localStorage;
+  try {
+    return normalizeWidgetIds(JSON.parse(getStorageItem(storage, CLOSED_WIDGETS_STORAGE_KEY) || '[]'));
+  } catch (e) {
+    removeStorageItem(storage, CLOSED_WIDGETS_STORAGE_KEY);
+    return [];
+  }
+}
+
+function getClosedWidgetOptions(closedIds, widgets) {
+  widgets = widgets || WIDGETS;
+  closedIds = normalizeWidgetIds(closedIds, widgets);
+  return closedIds.map(function(id) {
+    return widgets.find(function(w) { return w.id === id; });
+  }).filter(Boolean);
+}
+
+function defaultLayoutFor(id) {
+  return DEFAULT_LAYOUT.find(function(item) { return item.id === id; });
+}
+
+function storedLayoutFor(id) {
+  var layout = loadGridLayout();
+  var item = layout && layout.find(function(n) { return n.id === id; });
+  return item || defaultLayoutFor(id);
+}
+
+function getOpenWidgetLayout(layout, closedIds) {
+  closedIds = normalizeWidgetIds(closedIds || []);
+  return (layout || []).filter(function(item) {
+    return item && closedIds.indexOf(item.id) === -1;
+  });
+}
+
+function cacheWidgetElement(el) {
+  if (!el) return null;
+  var id = el.getAttribute('gs-id');
+  if (id) detachedWidgetElements[id] = el;
+  return el;
+}
+
+function findWidgetElement(id) {
+  return document.querySelector('[gs-id="' + id + '"]') || detachedWidgetElements[id] || null;
+}
+
+function detachClosedWidgetsBeforeGridInit(gridEl, closedIds) {
+  closedIds = normalizeWidgetIds(closedIds);
+  closedIds.forEach(function(id) {
+    var el = gridEl.querySelector('[gs-id="' + id + '"]');
+    if (!el) return;
+    cacheWidgetElement(el);
+    el.classList.add('widget-hidden');
+    gridEl.removeChild(el);
+  });
+}
+
+function layoutFromNode(node) {
+  if (!node) return null;
+  return { id: node.id, x: node.x, y: node.y, w: node.w, h: node.h };
+}
+
+function saveWidgetLayoutEntry(id, layout) {
+  if (!layout) return;
+  var existing = loadGridLayout() || DEFAULT_LAYOUT;
+  var found = false;
+  var items = existing.map(function(item) {
+    if (item.id !== id) return item;
+    found = true;
+    return { id: id, x: layout.x, y: layout.y, w: layout.w, h: layout.h };
+  });
+  if (!found) items.push({ id: id, x: layout.x, y: layout.y, w: layout.w, h: layout.h });
+  localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify({ v: GRID_VERSION, items: items }));
+}
+
+function destroyWidgetChart(id) {
+  if (id === 'hourly' && hourlyChart) {
+    hourlyChart.destroy();
+    hourlyChart = null;
+  } else if (id === 'stock' && stockChart) {
+    stockChart.destroy();
+    stockChart = null;
+  } else if (rangeCharts[id]) {
+    rangeCharts[id].destroy();
+    delete rangeCharts[id];
+  }
+}
+
+function refreshWidget(id) {
+  if (id === 'hourly') fetchHourly();
+  else if (id === 'stock') fetchStockWithFallback();
+  else {
+    var cfg = ranges.find(function(range) { return range.id === id; });
+    if (cfg) fetchRange(cfg);
+  }
+}
+
 function saveGridLayout() {
   if (!dashGrid) return;
+  var existing = loadGridLayout() || DEFAULT_LAYOUT;
+  var byId = {};
+  existing.forEach(function(n) { byId[n.id] = n; });
   var nodes = dashGrid.engine.nodes;
-  var items = nodes.map(function(n) {
-    return { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h };
+  nodes.forEach(function(n) {
+    byId[n.id] = { id: n.id, x: n.x, y: n.y, w: n.w, h: n.h };
   });
+  var items = WIDGETS.map(function(widget) {
+    return byId[widget.id] || defaultLayoutFor(widget.id);
+  }).filter(Boolean);
   localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify({ v: GRID_VERSION, items: items }));
+}
+
+function buildGridOptions(args) {
+  return {
+    column: 12,
+    cellHeight: args.cellHeight,
+    maxRow: args.rows,
+    margin: args.margin,
+    animate: true,
+    float: true,
+    handle: '.card-header',
+    resizable: { handles: 'e,se,s,sw,w' },
+  };
+}
+
+function renderWidgetMenu() {
+  var menu = $('widget-menu');
+  if (!menu) return;
+  var closed = getClosedWidgetOptions(loadClosedWidgetIds());
+  if (!closed.length) {
+    menu.innerHTML = '<div class="widget-menu-empty">All widgets are shown</div>';
+    return;
+  }
+  menu.innerHTML = closed.map(function(widget) {
+    return '<button type="button" data-widget-id="' + esc(widget.id) + '">' + esc(widget.title) + '</button>';
+  }).join('');
+}
+
+function setWidgetMenuOpen(open) {
+  var menu = $('widget-menu');
+  if (menu) menu.classList.toggle('open', open);
+}
+
+function setThemeMenuOpen(open) {
+  var menu = $('theme-menu');
+  if (menu) menu.classList.toggle('open', open);
+}
+
+function closeWidget(id) {
+  if (!dashGrid || !widgetExists(id)) return;
+  var el = findWidgetElement(id);
+  if (!el) return;
+  var node = el.gridstackNode;
+  if (node) {
+    saveWidgetLayoutEntry(id, layoutFromNode(node));
+    node._isAboutToRemove = true;
+  }
+  destroyWidgetChart(id);
+  cacheWidgetElement(el);
+  dashGrid.removeWidget(el, true, true);
+  el.classList.add('widget-hidden');
+  var closed = loadClosedWidgetIds();
+  if (closed.indexOf(id) === -1) closed.push(id);
+  saveClosedWidgetIds(closed);
+  renderWidgetMenu();
+  fitGridToViewport();
+}
+
+function addWidget(id) {
+  if (!dashGrid || !widgetExists(id)) return;
+  var el = findWidgetElement(id);
+  if (!el) return;
+  el.classList.remove('widget-hidden');
+  dashGrid.addWidget(el, storedLayoutFor(id));
+  var closed = loadClosedWidgetIds().filter(function(closedId) { return closedId !== id; });
+  saveClosedWidgetIds(closed);
+  renderWidgetMenu();
+  setWidgetMenuOpen(false);
+  saveGridLayout();
+  fitGridToViewport();
+  refreshWidget(id);
+}
+
+function applyClosedWidgets() {
+  renderWidgetMenu();
+}
+
+function initWidgetControls() {
+  if (document.querySelectorAll) {
+    document.querySelectorAll('.widget-close-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeWidget(btn.dataset.widgetId);
+      });
+    });
+  }
+
+  var addBtn = $('add-widget-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      renderWidgetMenu();
+      setThemeMenuOpen(false);
+      setWidgetMenuOpen(!$('widget-menu').classList.contains('open'));
+    });
+  }
+
+  var menu = $('widget-menu');
+  if (menu) {
+    menu.addEventListener('click', function(e) {
+      var item = e.target.closest('[data-widget-id]');
+      if (!item) return;
+      addWidget(item.dataset.widgetId);
+    });
+  }
+}
+
+function initThemeMenu() {
+  var btn = $('theme-menu-btn');
+  var menu = $('theme-menu');
+  if (!btn || !menu) return;
+
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setWidgetMenuOpen(false);
+    setThemeMenuOpen(!menu.classList.contains('open'));
+  });
+
+  menu.addEventListener('click', function(e) {
+    var item = e.target.closest('[data-theme]');
+    if (!item) return;
+    applyTheme(item.dataset.theme);
+    setThemeMenuOpen(false);
+  });
 }
 
 function loadGridLayout() {
@@ -1187,13 +1515,12 @@ function getMaxRow(layout) {
   if (!layout) layout = DEFAULT_LAYOUT;
   var max = 0;
   layout.forEach(function(n) { max = Math.max(max, (n.y || 0) + (n.h || 1)); });
-  return max || 9;
+  return Math.max(max || DEFAULT_GRID_ROWS, DEFAULT_GRID_ROWS);
 }
 
 function computeCellH(rows) {
   var hdr = document.querySelector('header');
-  var ftr = document.querySelector('footer');
-  var avail = window.innerHeight - (hdr ? hdr.offsetHeight : 0) - (ftr ? ftr.offsetHeight : 0);
+  var avail = window.innerHeight - (hdr ? hdr.offsetHeight : 0);
   return Math.max(30, avail / rows);
 }
 
@@ -1201,7 +1528,10 @@ function fitGridToViewport() {
   if (!dashGrid) return;
   var m = Math.round(getThemeGap() / 2);
   var nodes = dashGrid.engine.nodes;
-  var rows = getMaxRow(nodes.length ? nodes : null);
+  var saved = loadGridLayout();
+  var closed = loadClosedWidgetIds();
+  var layout = saved && saved.length ? getOpenWidgetLayout(saved, closed) : (nodes.length ? nodes : null);
+  var rows = getMaxRow(layout);
   var ch = computeCellH(rows);
   dashGrid.batchUpdate();
   dashGrid.margin(m);
@@ -1222,7 +1552,9 @@ function initDashboardGrid() {
   if (typeof GridStack === 'undefined') { console.warn('GridStack not loaded'); return; }
 
   var saved = loadGridLayout();
-  var layout = (saved && saved.length) ? saved : DEFAULT_LAYOUT;
+  var closed = loadClosedWidgetIds();
+  detachClosedWidgetsBeforeGridInit(el, closed);
+  var layout = getOpenWidgetLayout((saved && saved.length) ? saved : DEFAULT_LAYOUT, closed);
 
   layout.forEach(function(item) {
     var node = el.querySelector('[gs-id="' + item.id + '"]');
@@ -1240,16 +1572,11 @@ function initDashboardGrid() {
   var ch = computeCellH(rows);
 
   try {
-    dashGrid = GridStack.init({
-      column: 12,
+    dashGrid = GridStack.init(buildGridOptions({
       cellHeight: ch,
-      maxRow: rows,
       margin: m,
-      animate: true,
-      float: false,
-      handle: '.card-header',
-      resizable: { handles: 'e,se,s,sw,w' },
-    }, el);
+      rows: rows
+    }), el);
   } catch (e) {
     console.error('GridStack.init() threw:', e);
     return;
@@ -1264,6 +1591,7 @@ function initDashboardGrid() {
   dashGrid.on('resizestop', function() { setTimeout(resizeAllCharts, 60); });
   dashGrid.on('dragstop', function() { setTimeout(resizeAllCharts, 60); });
 
+  applyClosedWidgets();
   setTimeout(fitGridToViewport, 100);
 
   var resizeTimer;
@@ -1276,10 +1604,8 @@ function initDashboardGrid() {
 document.addEventListener('DOMContentLoaded', function() {
   var savedTheme = localStorage.getItem('rudolph-theme') || 'oneui';
   applyTheme(savedTheme);
-  var themeSel = $('theme-select');
-  if (themeSel) {
-    themeSel.addEventListener('change', function() { applyTheme(this.value); });
-  }
+  initThemeMenu();
+  initWidgetControls();
 
   initTickerCombo();
   initDashboardGrid();
@@ -1289,9 +1615,15 @@ document.addEventListener('DOMContentLoaded', function() {
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       localStorage.removeItem(GRID_STORAGE_KEY);
+      localStorage.removeItem(CLOSED_WIDGETS_STORAGE_KEY);
       location.reload();
     });
   }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#theme-menu-wrap')) setThemeMenuOpen(false);
+    if (!e.target.closest('#widget-menu-wrap')) setWidgetMenuOpen(false);
+  });
 
   setTimeout(dismissLoader, 6000);
 });
@@ -1307,13 +1639,21 @@ function initApp() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    __setMegaDataForTest: function(data) { megaData = data; },
+    buildGridOptions: buildGridOptions,
     buildIntradayDatasets: buildIntradayDatasets,
+    buildStatsHtml: buildStatsHtml,
     buildHeaderPriceHtml: buildHeaderPriceHtml,
     colorToRgba: colorToRgba,
+    computeStats: computeStats,
     exchangeMinutes: exchangeMinutes,
+    getClosedWidgetOptions: getClosedWidgetOptions,
+    getOpenWidgetLayout: getOpenWidgetLayout,
     getSessionQuote: getSessionQuote,
     hasPriceData: hasPriceData,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
+    loadClosedWidgetIds: loadClosedWidgetIds,
+    saveClosedWidgetIds: saveClosedWidgetIds,
     splitIntradaySeries: splitIntradaySeries
   };
 } else {
