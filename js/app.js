@@ -65,14 +65,14 @@ function externalTooltipHandler(context) {
 
   var html = '';
   if (titleLines.length) {
-    html += '<div class="tt-title">' + titleLines.join(' ') + '</div>';
+    html += '<div class="tt-title">' + esc(titleLines.join(' ')) + '</div>';
   }
   html += '<div class="tt-body">';
   bodyLines.forEach(function(lines, i) {
     var color = tooltip.labelColors && tooltip.labelColors[i]
       ? tooltip.labelColors[i].borderColor : 'var(--accent)';
     lines.forEach(function(line) {
-      html += '<div class="tt-row"><span class="tt-swatch" style="background:' + color + '"></span>' + line + '</div>';
+      html += '<div class="tt-row"><span class="tt-swatch" style="background:' + color + '"></span>' + esc(line) + '</div>';
     });
   });
   html += '</div>';
@@ -126,6 +126,9 @@ function refreshAllChartColors() {
     chart.data.datasets.forEach(function(ds) {
       if (ds.label === 'Prior') {
         ds.borderColor = ghostBorderColor();
+      } else if (ds.label === 'Extended Hours') {
+        ds.borderColor = afterHoursColor();
+        ds.backgroundColor = colorToRgba(ds.borderColor, 0.16);
       }
     });
 
@@ -334,20 +337,29 @@ function initTickerCombo() {
 // ─── Yahoo Finance fetch helper ──────────────────────
 // Extension host_permissions bypass CORS, so we fetch directly.
 // Falls back to corsproxy.io for standalone (non-extension) use.
+function wait(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+async function fetchJsonWithBackoff(url, attempts) {
+  var baseDelay = 250;
+  for (var i = 0; i < attempts; i++) {
+    try {
+      var res = await fetch(url);
+      if (res.ok) return await res.json();
+    } catch (e) { /* try again below */ }
+    if (i < attempts - 1) await wait(baseDelay * Math.pow(2, i));
+  }
+  return null;
+}
+
 async function yahooFetch(url) {
-  try {
-    var res = await fetch(url);
-    if (res.ok) return await res.json();
-  } catch (e) { /* direct failed */ }
+  var direct = await fetchJsonWithBackoff(url, 2);
+  if (direct) return direct;
 
   // Fallback for non-extension contexts
-  try {
-    var proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
-    var res2 = await fetch(proxy);
-    if (res2.ok) return await res2.json();
-  } catch (e) { /* proxy failed too */ }
-
-  return null;
+  var proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
+  return fetchJsonWithBackoff(proxy, 2);
 }
 
 // ─── Per-segment gradient coloring ───────────────────
@@ -578,11 +590,202 @@ function padAlign(arr, targetLen) {
   return out;
 }
 
+var REGULAR_MARKET_START_MINUTES = 9 * 60 + 30;
+var REGULAR_MARKET_END_MINUTES = 16 * 60;
+
+function normalizePrice(value) {
+  var n = Number(value);
+  return isFinite(n) ? +n.toFixed(2) : null;
+}
+
+function hasPriceData(data) {
+  if (!data) return false;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i] !== null && data[i] !== undefined && isFinite(data[i])) return true;
+  }
+  return false;
+}
+
+function lastPrice(data) {
+  if (!data) return null;
+  for (var i = data.length - 1; i >= 0; i--) {
+    if (data[i] !== null && data[i] !== undefined && isFinite(data[i])) return data[i];
+  }
+  return null;
+}
+
+function lastPoint(data) {
+  if (!data) return { index: -1, value: null };
+  for (var i = data.length - 1; i >= 0; i--) {
+    if (data[i] !== null && data[i] !== undefined && isFinite(data[i])) {
+      return { index: i, value: data[i] };
+    }
+  }
+  return { index: -1, value: null };
+}
+
+function exchangeMinutes(timestamp, gmtoffset) {
+  var exchangeDate = new Date((timestamp + (gmtoffset || 0)) * 1000);
+  return exchangeDate.getUTCHours() * 60 + exchangeDate.getUTCMinutes();
+}
+
+function isRegularMarketTimestamp(timestamp, gmtoffset) {
+  var minutes = exchangeMinutes(timestamp, gmtoffset);
+  return minutes >= REGULAR_MARKET_START_MINUTES && minutes < REGULAR_MARKET_END_MINUTES;
+}
+
+function splitIntradaySeries(timestamps, closes, gmtoffset) {
+  var regular = [];
+  var extended = [];
+  var combined = [];
+  var hasExtended = false;
+
+  for (var i = 0; i < timestamps.length; i++) {
+    var price = normalizePrice(closes[i]);
+    combined.push(price);
+
+    if (price === null) {
+      regular.push(null);
+      extended.push(null);
+      continue;
+    }
+
+    if (isRegularMarketTimestamp(timestamps[i], gmtoffset)) {
+      regular.push(price);
+      extended.push(null);
+    } else {
+      regular.push(null);
+      extended.push(price);
+      hasExtended = true;
+    }
+  }
+
+  return {
+    regular: regular,
+    extended: extended,
+    combined: combined,
+    hasExtended: hasExtended
+  };
+}
+
+function afterHoursColor() {
+  var color = getComputedStyle(document.body).getPropertyValue('--after-hours').trim();
+  return color || '#f5b642';
+}
+
+function colorToRgba(color, alpha) {
+  var m = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (m) return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + alpha + ')';
+  var rgb = color.match(/^rgb\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$/i);
+  if (rgb) return 'rgba(' + rgb[1] + ',' + rgb[2] + ',' + rgb[3] + ',' + alpha + ')';
+  return color;
+}
+
+function makeExtendedHoursDs(extendedData) {
+  var color = afterHoursColor();
+  return {
+    label: 'Extended Hours', data: extendedData,
+    borderColor: color,
+    backgroundColor: colorToRgba(color, 0.16),
+    borderWidth: 2.5,
+    pointRadius: 0,
+    pointHoverRadius: 3,
+    tension: 0.3,
+    fill: true,
+  };
+}
+
+function buildIntradayDatasets(args) {
+  var dataset = {
+    label: currentTicker, data: args.regularData,
+    borderColor: 'rgba(138,150,170,0.4)',
+    backgroundColor: 'rgba(138,150,170,0.08)',
+    segment: segmentStyle,
+    borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
+  };
+  var prevDs = {
+    label: 'Prev Close', data: Array(args.labels.length).fill(args.prevClose),
+    borderColor: 'rgba(138,150,170,.25)', borderWidth: 1, borderDash: [6, 4],
+    pointRadius: 0, fill: false,
+  };
+  var datasets = [dataset];
+  if (hasPriceData(args.extendedData)) datasets.push(makeExtendedHoursDs(args.extendedData));
+  datasets.push(prevDs);
+  if (args.priorData) datasets.push(makeGhostDs(args.priorData));
+  return datasets;
+}
+
+function getSessionQuote(meta, data, extendedData) {
+  var state = String(meta.marketState || '').toUpperCase();
+  var regularPrice = normalizePrice(meta.regularMarketPrice);
+  var price = regularPrice;
+  var extendedPrice = null;
+  var extendedLabel = '';
+  var session = 'today';
+  var latestExtended = lastPoint(extendedData);
+
+  if (state.indexOf('PRE') === 0) {
+    var prePrice = normalizePrice(meta.preMarketPrice);
+    var fallbackPrePrice = prePrice !== null ? prePrice : latestExtended.value;
+    if (fallbackPrePrice !== null) {
+      price = fallbackPrePrice;
+      extendedPrice = fallbackPrePrice;
+      extendedLabel = 'Pre';
+      session = 'pre-market';
+    }
+  } else if (state.indexOf('POST') === 0 || state === 'CLOSED') {
+    var postPrice = normalizePrice(meta.postMarketPrice);
+    var fallbackPostPrice = postPrice !== null ? postPrice : latestExtended.value;
+    if (fallbackPostPrice !== null) {
+      price = fallbackPostPrice;
+      extendedPrice = fallbackPostPrice;
+      extendedLabel = 'AH';
+      session = 'after hours';
+    }
+  } else if (latestExtended.value !== null && latestExtended.index === lastPoint(data).index) {
+    var latestExtendedPrice = latestExtended.value;
+    if (latestExtendedPrice !== null) {
+      var label = regularPrice === null ? 'Ext' : 'AH';
+      price = latestExtendedPrice;
+      extendedPrice = latestExtendedPrice;
+      extendedLabel = label;
+      session = label === 'AH' ? 'after hours' : 'extended hours';
+    }
+  }
+
+  if (price === null) price = lastPrice(data);
+  if (regularPrice === null) regularPrice = price;
+  return {
+    price: price,
+    regularPrice: regularPrice,
+    extendedPrice: extendedPrice,
+    extendedLabel: extendedLabel,
+    session: session
+  };
+}
+
+function buildHeaderPriceHtml(quote) {
+  var mainPrice = quote.regularPrice !== null && quote.regularPrice !== undefined
+    ? quote.regularPrice
+    : quote.price;
+  var html = '$' + mainPrice.toFixed(2);
+  if (quote.extendedPrice !== null && quote.extendedPrice !== undefined) {
+    html += '<span class="extended-price">' +
+      esc(quote.extendedLabel) + ' $' + quote.extendedPrice.toFixed(2) +
+    '</span>';
+  }
+  return html;
+}
+
+function renderHeaderPrice(quote) {
+  $('stock-price').innerHTML = buildHeaderPriceHtml(quote);
+}
+
 // ─── Hour Chart (last 60 minutes) ────────────────────
 var hourlyChart;
 
 async function fetchHourly() {
-  var json = await yahooFetch(chartUrl('range=1d&interval=1m'));
+  var json = await yahooFetch(chartUrl('range=1d&interval=1m&includePrePost=true'));
   if (json && json.chart && json.chart.result) {
     processHourlyData(json);
   } else {
@@ -600,26 +803,32 @@ async function processHourlyData(json) {
   var meta = result.meta;
   var timestamps = result.timestamp || [];
   var closes = result.indicators.quote[0].close || [];
+  var series = splitIntradaySeries(timestamps, closes, meta.gmtoffset || 0);
 
   var allLabels = timestamps.map(function(t) {
     return new Date(t * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   });
-  var allData = closes.map(function(c) { return c !== null ? +c.toFixed(2) : null; });
+  var allData = series.combined;
+  var allRegularData = series.regular;
+  var allExtendedData = series.extended;
 
   var n = allData.length;
   var cutoff = Math.max(0, n - 60);
   var labels = allLabels.slice(cutoff);
-  var data = allData.slice(cutoff);
+  var data = allRegularData.slice(cutoff);
+  var extendedData = allExtendedData.slice(cutoff);
+  var combinedData = allData.slice(cutoff);
 
   var priorStart = Math.max(0, cutoff - 60);
   var priorData = padAlign(allData.slice(priorStart, cutoff), data.length);
 
-  var price = meta.regularMarketPrice;
+  var quote = getSessionQuote(meta, allData, allExtendedData);
+  var price = quote.price;
   var prevClose = meta.chartPreviousClose || meta.previousClose;
   var diff = price - prevClose;
 
-  if (diff === 0 && allData.length > 1) {
-    var fl = firstLast(allData);
+  if (diff === 0 && combinedData.length > 1) {
+    var fl = firstLast(combinedData);
     if (fl.first !== null && fl.last !== null) {
       diff = fl.last - fl.first;
       price = fl.last;
@@ -630,18 +839,18 @@ async function processHourlyData(json) {
   var pct = prevClose ? ((diff / prevClose) * 100).toFixed(2) : '0.00';
   var up = diff >= 0;
 
-  $('stock-price').textContent = '$' + price.toFixed(2);
+  renderHeaderPrice(quote);
   $('stock-change').innerHTML =
     '<span style="color:' + (up ? 'var(--green)' : 'var(--red)') + '">' +
-      (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%) today' +
+      (up ? '+' : '') + diff.toFixed(2) + ' (' + (up ? '+' : '') + pct + '%) ' + quote.session +
     '</span>';
 
-  var stats = computeStats(data, 1);
+  var stats = computeStats(combinedData, 1);
   renderStats('hourly-stats', stats, true);
   updateNoseColor(up);
 
   await yieldFrame();
-  renderHourlyChart(labels, data, prevClose, priorData);
+  renderHourlyChart(labels, data, prevClose, priorData, extendedData);
   $('hourly-loader').style.display = 'none';
   markChartLoaded('hourly');
 }
@@ -688,23 +897,16 @@ function loadDemoHourlyData() {
   markChartLoaded('hourly');
 }
 
-function renderHourlyChart(labels, data, prevClose, priorData) {
-  var dataset = {
-    label: currentTicker, data: data,
-    borderColor: 'rgba(138,150,170,0.4)',
-    backgroundColor: 'rgba(138,150,170,0.08)',
-    segment: segmentStyle,
-    borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
-  };
-  var prevDs = {
-    label: 'Prev Close', data: Array(labels.length).fill(prevClose),
-    borderColor: 'rgba(138,150,170,.25)', borderWidth: 1, borderDash: [6, 4],
-    pointRadius: 0, fill: false,
-  };
-  var datasets = [dataset, prevDs];
-  if (priorData) datasets.push(makeGhostDs(priorData));
+function renderHourlyChart(labels, data, prevClose, priorData, extendedData) {
+  var datasets = buildIntradayDatasets({
+    labels: labels,
+    regularData: data,
+    extendedData: extendedData,
+    prevClose: prevClose,
+    priorData: priorData
+  });
 
-  var bounds = getBounds(1, [data, priorData]);
+  var bounds = getBounds(1, [data, extendedData, priorData]);
 
   if (hourlyChart) {
     hourlyChart.data.labels = labels;
@@ -728,7 +930,7 @@ function renderHourlyChart(labels, data, prevClose, priorData) {
 var stockChart;
 
 async function fetchStockWithFallback() {
-  var json = await yahooFetch(chartUrl('range=5d&interval=1m'));
+  var json = await yahooFetch(chartUrl('range=5d&interval=1m&includePrePost=true'));
   if (json && json.chart && json.chart.result) {
     processStockData(json);
   } else {
@@ -745,51 +947,49 @@ async function processStockData(json) {
   var meta = result.meta;
   var timestamps = result.timestamp || [];
   var closes = result.indicators.quote[0].close || [];
+  var series = splitIntradaySeries(timestamps, closes, meta.gmtoffset || 0);
 
   var byDate = {};
   for (var i = 0; i < timestamps.length; i++) {
     var d = new Date(timestamps[i] * 1000);
     var dateKey = d.toDateString();
-    if (!byDate[dateKey]) byDate[dateKey] = { labels: [], data: [] };
+    if (!byDate[dateKey]) byDate[dateKey] = { labels: [], regular: [], extended: [], combined: [] };
     byDate[dateKey].labels.push(d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-    byDate[dateKey].data.push(closes[i] !== null ? +closes[i].toFixed(2) : null);
+    byDate[dateKey].regular.push(series.regular[i]);
+    byDate[dateKey].extended.push(series.extended[i]);
+    byDate[dateKey].combined.push(series.combined[i]);
   }
 
   var dates = Object.keys(byDate).sort(function(a, b) { return new Date(a) - new Date(b); });
-  var cur = byDate[dates[dates.length - 1]] || { labels: [], data: [] };
+  var cur = byDate[dates[dates.length - 1]] || { labels: [], regular: [], extended: [], combined: [] };
   var prev = dates.length >= 2 ? byDate[dates[dates.length - 2]] : null;
 
   var labels = cur.labels;
-  var data = cur.data;
-  var priorData = prev ? padAlign(prev.data, data.length) : null;
+  var data = cur.regular;
+  var extendedData = cur.extended;
+  var combinedData = cur.combined;
+  var priorData = prev ? padAlign(prev.combined, combinedData.length) : null;
 
   var prevClose = meta.chartPreviousClose || meta.previousClose;
-  var stats = computeStats(data, 2);
+  var stats = computeStats(combinedData, 2);
   renderStats('today-stats', stats, true);
 
   await yieldFrame();
-  renderStockChart(labels, data, prevClose, priorData);
+  renderStockChart(labels, data, prevClose, priorData, extendedData);
   $('stock-loader').style.display = 'none';
   markChartLoaded('stock');
 }
 
-function renderStockChart(labels, data, prevClose, priorData) {
-  var dataset = {
-    label: currentTicker, data: data,
-    borderColor: 'rgba(138,150,170,0.4)',
-    backgroundColor: 'rgba(138,150,170,0.08)',
-    segment: segmentStyle,
-    borderWidth: 3, pointRadius: 0, pointHoverRadius: 3, tension: 0.3, fill: true,
-  };
-  var prevDs = {
-    label: 'Prev Close', data: Array(labels.length).fill(prevClose),
-    borderColor: 'rgba(138,150,170,.25)', borderWidth: 1, borderDash: [6, 4],
-    pointRadius: 0, fill: false,
-  };
-  var datasets = [dataset, prevDs];
-  if (priorData) datasets.push(makeGhostDs(priorData));
+function renderStockChart(labels, data, prevClose, priorData, extendedData) {
+  var datasets = buildIntradayDatasets({
+    labels: labels,
+    regularData: data,
+    extendedData: extendedData,
+    prevClose: prevClose,
+    priorData: priorData
+  });
 
-  var bounds = getBounds(2, [data, priorData]);
+  var bounds = getBounds(2, [data, extendedData, priorData]);
 
   if (stockChart) {
     stockChart.data.labels = labels;
@@ -1097,8 +1297,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ─── Init ────────────────────────────────────────────
-fetchMegaData();
-fetchHourly();
-fetchStockWithFallback();
-fetchAllRanges();
-startTimers(REFRESH_MS);
+function initApp() {
+  fetchMegaData();
+  fetchHourly();
+  fetchStockWithFallback();
+  fetchAllRanges();
+  startTimers(REFRESH_MS);
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    buildIntradayDatasets: buildIntradayDatasets,
+    buildHeaderPriceHtml: buildHeaderPriceHtml,
+    colorToRgba: colorToRgba,
+    exchangeMinutes: exchangeMinutes,
+    getSessionQuote: getSessionQuote,
+    hasPriceData: hasPriceData,
+    isRegularMarketTimestamp: isRegularMarketTimestamp,
+    splitIntradaySeries: splitIntradaySeries
+  };
+} else {
+  initApp();
+}

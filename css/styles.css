@@ -12,7 +12,7 @@
    ─────────────────────────────────────────────
    Palette        --bg  --bg-grad  --surface  --surface-hi  --border
                   --text  --accent  --accent-glow
-                  --green  --green-glow  --red
+                  --green  --green-glow  --red  --after-hours
    Corners        --radius-xs  --radius-sm  --radius-md  --radius-lg
                   --radius-pill  --radius-btn
    Depth          --shadow  --card-blur  --hdr-blur  --pill-blur
@@ -37,6 +37,7 @@ body, body.theme-oneui {
   --green:         #3ddc84;
   --green-glow:    rgba(61,220,132,.5);
   --red:           #f4605a;
+  --after-hours:   #f5b642;
   --radius-xs:     10px;
   --radius-sm:     14px;
   --radius-md:     20px;
@@ -87,6 +88,7 @@ body.theme-glass {
   --green:         #30d158;
   --green-glow:    rgba(48,209,88,.5);
   --red:           #ff453a;
+  --after-hours:   #ffd60a;
   --radius-xs:     14px;
   --radius-sm:     18px;
   --radius-md:     22px;
@@ -133,6 +135,7 @@ body.theme-webex {
   --green:         #1db954;
   --green-glow:    rgba(29,185,84,.5);
   --red:           #fc5c65;
+  --after-hours:   #ffb84d;
   --radius-xs:     8px;
   --radius-sm:     10px;
   --radius-md:     12px;
@@ -185,6 +188,7 @@ body.theme-fluent {
   --green:         #6ccb5f;
   --green-glow:    rgba(108,203,95,.5);
   --red:           #ff99a4;
+  --after-hours:   #f7c843;
   --radius-xs:     2px;
   --radius-sm:     4px;
   --radius-md:     8px;
@@ -239,6 +243,7 @@ body.theme-material {
   --green:         #7dd077;
   --green-glow:    rgba(125,208,119,.45);
   --red:           #f2b8b5;
+  --after-hours:   #f4c542;
   --radius-xs:     4px;
   --radius-sm:     8px;
   --radius-md:     12px;
@@ -293,6 +298,7 @@ body.theme-carbon {
   --green:         #42be65;
   --green-glow:    rgba(66,190,101,.45);
   --red:           #fa4d56;
+  --after-hours:   #f1c21b;
   --radius-xs:     0px;
   --radius-sm:     0px;
   --radius-md:     0px;
@@ -644,9 +650,20 @@ header {
 }
 
 .hdr-price .stock-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.5px;
+}
+
+.hdr-price .extended-price {
+  color: var(--after-hours);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .hdr-price .stock-change {
@@ -1120,4 +1137,3 @@ body.theme-carbon footer {
   header { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
   .hdr-ticker, .hdr-price, .hdr-theme { border-left: none; padding-left: 0; }
 }
-
