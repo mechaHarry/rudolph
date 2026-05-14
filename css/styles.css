@@ -361,6 +361,10 @@ body {
   height: 100vh;
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
+  --page-edge-gap: var(--gap-grid);
+  --grid-edge-offset: calc(var(--gap-grid) / 2);
+  gap: var(--grid-edge-offset);
+  padding: var(--page-edge-gap) var(--grid-edge-offset) var(--grid-edge-offset);
 }
 
 /* ── Header ───────────────────────────────────── */
@@ -370,9 +374,12 @@ header {
   display: flex;
   align-items: center;
   gap: var(--gap-hdr);
+  margin-inline: var(--grid-edge-offset);
   padding: var(--pad-hdr);
   background: var(--hdr-bg);
-  border-bottom: 1px solid var(--border);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
   flex-shrink: 0;
   backdrop-filter: var(--hdr-blur);
   min-height: 48px;
@@ -1032,7 +1039,7 @@ body.theme-glass .chart-tooltip {
    Interaction states darken for web (lighter for Windows native).
    Focus uses thicker stroke, no color change. */
 body.theme-fluent header {
-  border-bottom: 1px solid rgba(255,255,255,.0837);
+  border: 1px solid rgba(255,255,255,.0837);
 }
 
 body.theme-fluent .card {
@@ -1071,7 +1078,7 @@ body.theme-material .card:hover {
 }
 
 body.theme-material header {
-  border-bottom: none;
+  border: none;
   box-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 
@@ -1099,7 +1106,7 @@ body.theme-material .widget-menu {
    Stat pills keep pill radius for tag-like appearance.
    No shadows anywhere — elevation via layering model only. */
 body.theme-carbon header {
-  border-bottom: 2px solid var(--border);
+  border: 1px solid var(--border);
   min-height: 48px;
 }
 
