@@ -1518,10 +1518,34 @@ function getMaxRow(layout) {
   return Math.max(max || DEFAULT_GRID_ROWS, DEFAULT_GRID_ROWS);
 }
 
-function computeCellH(rows) {
+function calculateCellHeight(availableHeight, rows) {
+  var safeRows = Math.max(parseInt(rows, 10) || DEFAULT_GRID_ROWS, 1);
+  var safeHeight = parseFloat(availableHeight) || 0;
+  return Math.max(30, safeHeight / safeRows);
+}
+
+function readCssPx(styles, name) {
+  return parseFloat(styles.getPropertyValue(name)) || 0;
+}
+
+function getGridAvailableHeight() {
+  var grid = document.getElementById('dashboard-grid');
+  if (grid) {
+    var gridHeight = grid.clientHeight ||
+      grid.offsetHeight ||
+      (grid.getBoundingClientRect ? grid.getBoundingClientRect().height : 0);
+    if (gridHeight > 0) return gridHeight;
+  }
+
   var hdr = document.querySelector('header');
-  var avail = window.innerHeight - (hdr ? hdr.offsetHeight : 0);
-  return Math.max(30, avail / rows);
+  var bodyStyles = getComputedStyle(document.body);
+  var frameY = readCssPx(bodyStyles, 'padding-top') + readCssPx(bodyStyles, 'padding-bottom');
+  var bodyGap = readCssPx(bodyStyles, 'row-gap') || readCssPx(bodyStyles, 'gap');
+  return window.innerHeight - (hdr ? hdr.offsetHeight : 0) - frameY - bodyGap;
+}
+
+function computeCellH(rows) {
+  return calculateCellHeight(getGridAvailableHeight(), rows);
 }
 
 function fitGridToViewport() {
@@ -1644,6 +1668,7 @@ if (typeof module !== 'undefined' && module.exports) {
     buildIntradayDatasets: buildIntradayDatasets,
     buildStatsHtml: buildStatsHtml,
     buildHeaderPriceHtml: buildHeaderPriceHtml,
+    calculateCellHeight: calculateCellHeight,
     colorToRgba: colorToRgba,
     computeStats: computeStats,
     exchangeMinutes: exchangeMinutes,
