@@ -254,6 +254,13 @@ test('buildGridOptions enables floating no-gravity layout behavior', () => {
   assert.equal(options.handle, '.card-header');
 });
 
+test('calculateCellHeight sizes rows from available grid height', () => {
+  const app = loadApp();
+
+  assert.equal(app.calculateCellHeight(720, 9), 80);
+  assert.equal(app.calculateCellHeight(180, 9), 30);
+});
+
 test('getOpenWidgetLayout excludes closed widgets before grid startup', () => {
   const app = loadApp();
   const layout = [
