@@ -294,10 +294,87 @@ function refreshAllChartColors() {
 // Theme init merged into the button DOMContentLoaded listener below
 
 // ─── Ticker Management ──────────────────────────────
-var currentTicker = localStorage.getItem('rudolph-ticker') || 'CSCO';
-var savedTickers = JSON.parse(
-  localStorage.getItem('rudolph-tickers') || '[{"sym":"CSCO","name":"Cisco Systems, Inc."}]'
-);
+var DEFAULT_TICKERS = [
+  { sym: 'NVDA', name: 'NVIDIA Corporation' },
+  { sym: 'AAPL', name: 'Apple Inc.' },
+  { sym: 'MSFT', name: 'Microsoft Corporation' },
+  { sym: 'AMZN', name: 'Amazon.com, Inc.' },
+  { sym: 'GOOGL', name: 'Alphabet Inc.' }
+];
+
+function cloneTickers(tickers) {
+  return tickers.map(function(t) {
+    return { sym: t.sym, name: t.name };
+  });
+}
+
+function normalizeTickerList(tickers) {
+  if (!Array.isArray(tickers)) return [];
+
+  var seen = {};
+  var out = [];
+  tickers.forEach(function(t) {
+    if (!t || typeof t.sym !== 'string') return;
+    var sym = t.sym.trim().toUpperCase();
+    if (!sym || seen[sym]) return;
+    seen[sym] = true;
+    out.push({
+      sym: sym,
+      name: typeof t.name === 'string' && t.name.trim() ? t.name.trim() : sym
+    });
+  });
+  return out;
+}
+
+function getDefaultTickers() {
+  return cloneTickers(DEFAULT_TICKERS);
+}
+
+function loadSavedTickers(storage) {
+  storage = storage || localStorage;
+  var raw = storage && typeof storage.getItem === 'function'
+    ? storage.getItem('rudolph-tickers')
+    : null;
+  if (!raw) return getDefaultTickers();
+
+  try {
+    var parsed = normalizeTickerList(JSON.parse(raw));
+    return parsed.length ? parsed : getDefaultTickers();
+  } catch (e) {
+    return getDefaultTickers();
+  }
+}
+
+function getInitialTicker(storage, tickers) {
+  storage = storage || localStorage;
+  tickers = normalizeTickerList(tickers);
+  var stored = storage && typeof storage.getItem === 'function'
+    ? storage.getItem('rudolph-ticker')
+    : null;
+  if (stored) {
+    stored = stored.trim().toUpperCase();
+    if (tickers.some(function(t) { return t.sym === stored; })) return stored;
+  }
+  return tickers.length ? tickers[0].sym : DEFAULT_TICKERS[0].sym;
+}
+
+function removeTickerFromList(tickers, sym, activeSym) {
+  var normalized = normalizeTickerList(tickers);
+  var removeSym = String(sym || '').trim().toUpperCase();
+  var active = String(activeSym || '').trim().toUpperCase();
+  var nextTickers = normalized.filter(function(t) { return t.sym !== removeSym; });
+  if (!nextTickers.length) nextTickers = getDefaultTickers();
+
+  return {
+    tickers: nextTickers,
+    currentTicker: removeSym === active
+      ? nextTickers[0].sym
+      : getInitialTicker({ getItem: function() { return active; } }, nextTickers)
+  };
+}
+
+var savedTickers = loadSavedTickers(localStorage);
+var currentTicker = getInitialTicker(localStorage, savedTickers);
 
 function saveTickers() {
   localStorage.setItem('rudolph-tickers', JSON.stringify(savedTickers));
@@ -340,7 +417,7 @@ function renderTickerList(searchResults) {
       html += '<div class="ticker-item' + (isActive ? ' active' : '') + '" data-sym="' + esc(t.sym) + '" data-name="' + esc(t.name) + '" data-action="select">' +
         '<span class="ticker-item-sym">' + esc(t.sym) + '</span>' +
         '<span class="ticker-item-name">' + esc(t.name) + '</span>' +
-        (!isActive ? '<button class="ticker-item-action remove" data-action="remove" type="button">\u00d7</button>' : '') +
+        '<button class="ticker-item-action remove" data-action="remove" type="button" aria-label="Remove ' + esc(t.sym) + '">\u00d7</button>' +
       '</div>';
     }
   }
@@ -371,10 +448,15 @@ function addTicker(sym, name) {
 }
 
 function removeTicker(sym) {
-  if (sym === currentTicker) return;
-  savedTickers = savedTickers.filter(function(t) { return t.sym !== sym; });
+  var previousTicker = currentTicker;
+  var result = removeTickerFromList(savedTickers, sym, currentTicker);
+  savedTickers = result.tickers;
+  currentTicker = result.currentTicker;
   saveTickers();
+  localStorage.setItem('rudolph-ticker', currentTicker);
+  $('ticker-btn').textContent = currentTicker;
   renderTickerList();
+  if (currentTicker !== previousTicker) resetDashboard();
 }
 
 function selectTicker(sym) {
@@ -472,6 +554,7 @@ function initTickerCombo() {
   });
 
   $('ticker-list').addEventListener('click', function(e) {
+    e.stopPropagation();
     var removeBtn = e.target.closest('.remove');
     if (removeBtn) {
       var item = removeBtn.closest('.ticker-item');
@@ -1830,6 +1913,8 @@ if (typeof module !== 'undefined' && module.exports) {
     computeStats: computeStats,
     exchangeMinutes: exchangeMinutes,
     getClosedWidgetOptions: getClosedWidgetOptions,
+    getDefaultTickers: getDefaultTickers,
+    getInitialTicker: getInitialTicker,
     getOpenWidgetLayout: getOpenWidgetLayout,
     getSessionQuote: getSessionQuote,
     getStoredAppearancePreference: getStoredAppearancePreference,
@@ -1838,7 +1923,9 @@ if (typeof module !== 'undefined' && module.exports) {
     hasPriceData: hasPriceData,
     isThemeMenuSelectionTarget: isThemeMenuSelectionTarget,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
+    loadSavedTickers: loadSavedTickers,
     loadClosedWidgetIds: loadClosedWidgetIds,
+    removeTickerFromList: removeTickerFromList,
     resolveAppearanceMode: resolveAppearanceMode,
     resolveThemeId: resolveThemeId,
     saveClosedWidgetIds: saveClosedWidgetIds,
