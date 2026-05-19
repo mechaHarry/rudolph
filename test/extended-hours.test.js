@@ -315,6 +315,50 @@ test('themeClassNameFor maps theme family and appearance to body classes', () =>
   assert.equal(app.themeClassNameFor('oneui', 'light'), 'theme-oneui mode-light');
   assert.equal(app.themeClassNameFor('oneui', 'dark'), 'theme-oneui mode-dark');
   assert.equal(app.themeClassNameFor('glass', 'light'), 'theme-glass mode-light');
+  assert.equal(app.themeClassNameFor('webex', 'dark'), 'theme-webex mode-dark');
+});
+
+test('default ticker list uses five broad-market symbols without company-specific defaults', () => {
+  const app = loadApp();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(app.getDefaultTickers())), [
+    { sym: 'NVDA', name: 'NVIDIA Corporation' },
+    { sym: 'AAPL', name: 'Apple Inc.' },
+    { sym: 'MSFT', name: 'Microsoft Corporation' },
+    { sym: 'AMZN', name: 'Amazon.com, Inc.' },
+    { sym: 'GOOGL', name: 'Alphabet Inc.' }
+  ]);
+  assert.equal(app.getInitialTicker({}, app.getDefaultTickers()), 'NVDA');
+});
+
+test('loadSavedTickers falls back to the default list when storage is empty or invalid', () => {
+  const app = loadApp();
+  const emptyStorage = { getItem: () => null };
+  const invalidStorage = { getItem: () => 'not json' };
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(app.loadSavedTickers(emptyStorage))),
+    JSON.parse(JSON.stringify(app.getDefaultTickers()))
+  );
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(app.loadSavedTickers(invalidStorage))),
+    JSON.parse(JSON.stringify(app.getDefaultTickers()))
+  );
+});
+
+test('removeTickerFromList can trim the active symbol and selects the next available symbol', () => {
+  const app = loadApp();
+  const result = app.removeTickerFromList([
+    { sym: 'NVDA', name: 'NVIDIA Corporation' },
+    { sym: 'AAPL', name: 'Apple Inc.' },
+    { sym: 'MSFT', name: 'Microsoft Corporation' }
+  ], 'NVDA', 'NVDA');
+
+  assert.deepEqual(JSON.parse(JSON.stringify(result.tickers)), [
+    { sym: 'AAPL', name: 'Apple Inc.' },
+    { sym: 'MSFT', name: 'Microsoft Corporation' }
+  ]);
+  assert.equal(result.currentTicker, 'AAPL');
 });
 
 test('buildThemeState keeps theme family independent from automatic light mode', () => {
@@ -383,4 +427,32 @@ test('theme menu selections keep the dropdown open after choosing a theme or app
   assert.equal(app.isThemeMenuSelectionTarget(themeTarget), true);
   assert.equal(app.isThemeMenuSelectionTarget(appearanceTarget), true);
   assert.equal(app.isThemeMenuSelectionTarget(emptyTarget), false);
+});
+
+test('theme menu labels the webex family as Cisco Momentum', () => {
+  const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const newtabHtml = fs.readFileSync(path.join(__dirname, '..', 'newtab.html'), 'utf8');
+
+  assert.match(indexHtml, /data-theme="webex"[^>]*>Cisco Momentum<\/button>/);
+  assert.match(newtabHtml, /data-theme="webex"[^>]*>Cisco Momentum<\/button>/);
+  assert.doesNotMatch(indexHtml, /Cisco Webex/);
+  assert.doesNotMatch(newtabHtml, /Cisco Webex/);
+});
+
+test('webex theme CSS uses Momentum stable token values', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+
+  assert.match(css, /Cisco Momentum/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--bg:\s*#000000;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--surface:\s*#1a1a1a;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--text:\s*#fffffff2;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--accent:\s*#3492eb;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--green:\s*#3cc29a;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--red:\s*#fc8b98;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--font:\s*Momentum, Inter, Arial, 'Helvetica Neue', Helvetica, sans-serif;/);
+  assert.match(css, /body\.theme-webex\s*\{[\s\S]*--card-blur:\s*blur\(10px\);/);
+  assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--bg:\s*#ffffff;/);
+  assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--surface:\s*#f7f7f7;/);
+  assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--text:\s*#000000f2;/);
+  assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--accent:\s*#1170cf;/);
 });
