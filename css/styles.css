@@ -129,10 +129,12 @@ body.theme-light {
 }
 
 /* ── Apple Liquid Glass ──────────────────────── */
-/* Ref: Apple HIG Liquid Glass (WWDC25). Content-first translucent material
-   with refraction, specular highlights, concentric hardware-informed rounding.
-   System colors: systemBlue #0a84ff, systemGreen #30d158, systemRed #ff453a.
-   Fonts: SF Pro (via -apple-system). Min text 11pt. Touch target 44×44pt. */
+/* Ref: getdesign.md/apple/design-md and Apple HIG Liquid Glass.
+   Premium white space, SF Pro/system font, content-first translucent material
+   with refraction, specular highlights, and concentric hardware-informed rounding.
+   Dark system colors: Blue #0a84ff, Green #30d158, Red #ff453a, Yellow #ffd60a.
+   Light system colors: Blue #007aff, Green #34c759, Red #ff3b30, Yellow #ffcc00.
+   Min text 11pt. Touch target 44×44pt. SF Symbols-style icon pairing. */
 body.theme-glass {
   --bg:            #000000;
   --bg-grad:       #000000;
@@ -156,12 +158,12 @@ body.theme-glass {
   --shadow:        0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.05) inset;
   --card-bg:       linear-gradient(175deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
   --card-border:   1px solid rgba(255,255,255,.12);
-  --card-blur:     none;
+  --card-blur:     blur(24px);
   --hdr-bg:        rgba(255,255,255,.08);
-  --hdr-blur:      none;
+  --hdr-blur:      blur(24px);
   --ftr-bg:        rgba(255,255,255,.06);
   --pill-bg:       rgba(255,255,255,.08);
-  --pill-blur:     none;
+  --pill-blur:     blur(18px);
   --skel-mid:      rgba(255,255,255,.07);
   --grid-line:     rgba(255,255,255,.04);
   --pad-card:      12px 18px;
@@ -171,7 +173,7 @@ body.theme-glass {
   --font:          -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   --font-mono:     'SF Mono', 'Menlo', monospace;
   --title-weight:  600;
-  --title-tracking:-0.3px;
+  --title-tracking: 0px;
   --btn-active-text:   #ffffff;
   --btn-active-shadow: 0 1px 8px var(--accent-glow);
   --motion-dur:        500ms;
@@ -400,20 +402,20 @@ body.theme-carbon {
 /* ── Light appearance variants for each theme family ─ */
 body.theme-glass.mode-light {
   color-scheme: light;
-  --bg:            #f7f8fb;
-  --bg-grad:       #f7f8fb;
+  --bg:            #f5f5f7;
+  --bg-grad:       #f5f5f7;
   --glow-base:     #e2e8f3;
   --surface:       rgba(255,255,255,.66);
   --surface-hi:    rgba(255,255,255,.82);
   --border:        rgba(32,45,68,.14);
-  --text:          #171b26;
-  --logo-stroke:   #171b26;
+  --text:          #1d1d1f;
+  --logo-stroke:   #1d1d1f;
   --accent:        #007aff;
   --accent-glow:   rgba(0,122,255,.24);
-  --green:         #248a3d;
-  --green-glow:    rgba(36,138,61,.25);
-  --red:           #d70015;
-  --after-hours:   #a15c00;
+  --green:         #34c759;
+  --green-glow:    rgba(52,199,89,.25);
+  --red:           #ff3b30;
+  --after-hours:   #ffcc00;
   --shadow:        0 8px 28px rgba(30,42,64,.14), 0 1px 0 rgba(255,255,255,.9) inset;
   --card-bg:       linear-gradient(175deg, rgba(255,255,255,.74) 0%, rgba(255,255,255,.52) 100%);
   --card-border:   1px solid rgba(32,45,68,.12);

@@ -476,3 +476,24 @@ test('carbon theme CSS uses IBM Carbon theme tokens and flat layers', () => {
   assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--text:\s*#161616;/);
   assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--accent:\s*#0f62fe;/);
 });
+
+test('glass theme CSS uses Apple Liquid Glass references and system colors', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+
+  assert.match(css, /getdesign\.md\/apple\/design-md/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--bg:\s*#000000;/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--text:\s*#f5f5f7;/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--accent:\s*#0a84ff;/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--green:\s*#30d158;/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--red:\s*#ff453a;/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--card-blur:\s*blur\(24px\);/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--hdr-blur:\s*blur\(24px\);/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--pill-blur:\s*blur\(18px\);/);
+  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--title-tracking:\s*0px;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--bg:\s*#f5f5f7;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--text:\s*#1d1d1f;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--accent:\s*#007aff;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--green:\s*#34c759;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--red:\s*#ff3b30;/);
+  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--after-hours:\s*#ffcc00;/);
+});
