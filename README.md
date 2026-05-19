@@ -47,6 +47,7 @@ Useful checks:
 
 ```bash
 node --test test/extended-hours.test.js
+node --test test/package-release.test.js
 node --check js/app.js
 ```
 
@@ -63,6 +64,46 @@ http://127.0.0.1:8765/index.html
 ```
 
 The extension entrypoint is `newtab.html`; `index.html` is useful for local browser preview.
+
+## Packaging
+
+Semantic version tracking lives in `VERSION`, and `manifest.json` must use the same version.
+
+Create the Chrome extension package:
+
+```bash
+./package.sh
+```
+
+This creates one installable extension zip in `dist/`, with `manifest.json` at the zip root:
+
+```text
+dist/Rudolph-<version>-chrome-extension.zip
+```
+
+## Release
+
+Create a signed semantic version tag and publish a GitHub release:
+
+```bash
+GITHUB_TOKEN=... ./release.sh
+```
+
+The release script:
+
+- Reads `VERSION`.
+- Requires `manifest.json` to match `VERSION`.
+- Creates a signed tag named `v<VERSION>`.
+- Pushes the tag to `origin`.
+- Packages the extension.
+- Creates a GitHub release with generated release notes.
+- Uploads the single extension zip as the release asset.
+
+Preview without creating tags or releases:
+
+```bash
+./release.sh --dry-run
+```
 
 ## Repository Notes
 
