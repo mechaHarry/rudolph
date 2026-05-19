@@ -102,6 +102,78 @@ test('splitIntradaySeries separates premarket and postmarket prices from regular
   assert.equal(series.hasExtended, true);
 });
 
+test('splitIntradaySeries treats non-positive prices as missing data', () => {
+  const app = loadApp();
+  const timestamps = [
+    Date.UTC(2026, 4, 19, 13, 30) / 1000,
+    Date.UTC(2026, 4, 19, 13, 31) / 1000,
+    Date.UTC(2026, 4, 19, 13, 32) / 1000,
+    Date.UTC(2026, 4, 19, 13, 33) / 1000
+  ];
+  const closes = [116.55, 0, -1, 116.57];
+
+  const series = app.splitIntradaySeries(timestamps, closes, 0);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(series.combined)), [116.55, null, null, 116.57]);
+  assert.deepEqual(JSON.parse(JSON.stringify(series.regular)), [116.55, null, null, 116.57]);
+});
+
+test('rate limited fetches honor Retry-After and skip provider during cooldown', async () => {
+  const app = loadApp();
+  let calls = 0;
+  const waits = [];
+  app.__setWaitForTest(async (ms) => { waits.push(ms); });
+  app.__setFetchForTest(async () => {
+    calls += 1;
+    return {
+      ok: false,
+      status: 429,
+      headers: { get: (name) => name.toLowerCase() === 'retry-after' ? '2' : null }
+    };
+  });
+
+  const first = await app.fetchJsonWithBackoff('https://query1.finance.yahoo.com/v8/finance/chart/CSCO', 3);
+  const second = await app.fetchJsonWithBackoff('https://query1.finance.yahoo.com/v8/finance/chart/CSCO', 3);
+
+  assert.equal(first, null);
+  assert.equal(second, null);
+  assert.equal(calls, 1);
+  assert.deepEqual(waits, []);
+  app.__resetFetchStateForTest();
+});
+
+test('rate limited fetch returns cached response while provider is cooling down', async () => {
+  const app = loadApp();
+  let calls = 0;
+  app.__setWaitForTest(async () => {});
+  app.__setFetchForTest(async () => {
+    calls += 1;
+    if (calls === 1) {
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        json: async () => ({ ok: true, price: 116.57 })
+      };
+    }
+    return {
+      ok: false,
+      status: 429,
+      headers: { get: () => null }
+    };
+  });
+
+  const first = await app.fetchJsonWithBackoff('https://query1.finance.yahoo.com/v8/finance/chart/CSCO', 2);
+  const second = await app.fetchJsonWithBackoff('https://query1.finance.yahoo.com/v8/finance/chart/CSCO', 2);
+  const third = await app.fetchJsonWithBackoff('https://query1.finance.yahoo.com/v8/finance/chart/CSCO', 2);
+
+  assert.deepEqual(first, { ok: true, price: 116.57 });
+  assert.deepEqual(second, { ok: true, price: 116.57 });
+  assert.deepEqual(third, { ok: true, price: 116.57 });
+  assert.equal(calls, 2);
+  app.__resetFetchStateForTest();
+});
+
 test('buildIntradayDatasets adds orange/yellow extended-hours line and shade when data exists', () => {
   const app = loadApp();
 

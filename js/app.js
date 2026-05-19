@@ -581,16 +581,97 @@ function wait(ms) {
   return new Promise(function(resolve) { setTimeout(resolve, ms); });
 }
 
+var fetchImpl = function(url) { return fetch(url); };
+var waitImpl = wait;
+var RATE_LIMIT_MIN_COOLDOWN_MS = 5000;
+var RATE_LIMIT_MAX_COOLDOWN_MS = 5 * 60 * 1000;
+var fetchStateByProvider = {};
+
+function nowMs() {
+  return Date.now();
+}
+
+function providerKeyForUrl(url) {
+  if (String(url).indexOf('query1.finance.yahoo.com') !== -1) return 'yahoo';
+  try {
+    return new URL(url).origin;
+  } catch (e) {
+    return String(url).split('?')[0];
+  }
+}
+
+function retryAfterMs(res) {
+  if (!res || !res.headers || typeof res.headers.get !== 'function') return null;
+  var raw = res.headers.get('Retry-After') || res.headers.get('retry-after');
+  if (!raw) return null;
+  var seconds = Number(raw);
+  if (isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  var dateMs = Date.parse(raw);
+  if (isFinite(dateMs)) return Math.max(0, dateMs - nowMs());
+  return null;
+}
+
+function isRateLimitResponse(res) {
+  if (!res) return false;
+  return res.status === 429 || res.status === 999 || res.status === 403;
+}
+
+function getFetchState(providerKey) {
+  if (!fetchStateByProvider[providerKey]) {
+    fetchStateByProvider[providerKey] = {
+      cooldownUntil: 0,
+      failures: 0,
+      cache: {}
+    };
+  }
+  return fetchStateByProvider[providerKey];
+}
+
+function cacheKeyForUrl(url) {
+  return String(url);
+}
+
+function cachedJsonForUrl(state, url) {
+  var cached = state.cache[cacheKeyForUrl(url)];
+  return cached ? cached.json : null;
+}
+
+function setRateLimitCooldown(state, res) {
+  var retryMs = retryAfterMs(res);
+  if (retryMs === null) {
+    retryMs = Math.min(RATE_LIMIT_MAX_COOLDOWN_MS, RATE_LIMIT_MIN_COOLDOWN_MS * Math.pow(2, state.failures));
+  }
+  state.failures += 1;
+  state.cooldownUntil = nowMs() + Math.min(RATE_LIMIT_MAX_COOLDOWN_MS, retryMs);
+}
+
 async function fetchJsonWithBackoff(url, attempts) {
   var baseDelay = 250;
+  var providerKey = providerKeyForUrl(url);
+  var state = getFetchState(providerKey);
+  if (state.cooldownUntil > nowMs()) return cachedJsonForUrl(state, url);
+
   for (var i = 0; i < attempts; i++) {
     try {
-      var res = await fetch(url);
-      if (res.ok) return await res.json();
+      var res = await fetchImpl(url);
+      if (res.ok) {
+        var json = await res.json();
+        state.failures = 0;
+        state.cooldownUntil = 0;
+        state.cache[cacheKeyForUrl(url)] = { json: json, at: nowMs() };
+        return json;
+      }
+      if (isRateLimitResponse(res)) {
+        setRateLimitCooldown(state, res);
+        return cachedJsonForUrl(state, url);
+      }
     } catch (e) { /* try again below */ }
-    if (i < attempts - 1) await wait(baseDelay * Math.pow(2, i));
+    if (i < attempts - 1) {
+      var jitter = Math.floor(Math.random() * 100);
+      await waitImpl(baseDelay * Math.pow(2, i) + jitter);
+    }
   }
-  return null;
+  return cachedJsonForUrl(state, url);
 }
 
 async function yahooFetch(url) {
@@ -851,7 +932,7 @@ var REGULAR_MARKET_END_MINUTES = 16 * 60;
 
 function normalizePrice(value) {
   var n = Number(value);
-  return isFinite(n) ? +n.toFixed(2) : null;
+  return isFinite(n) && n > 0 ? +n.toFixed(2) : null;
 }
 
 function hasPriceData(data) {
@@ -1903,6 +1984,13 @@ function initApp() {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     __setMegaDataForTest: function(data) { megaData = data; },
+    __setFetchForTest: function(fn) { fetchImpl = fn; },
+    __setWaitForTest: function(fn) { waitImpl = fn; },
+    __resetFetchStateForTest: function() {
+      fetchImpl = function(url) { return fetch(url); };
+      waitImpl = wait;
+      fetchStateByProvider = {};
+    },
     buildGridOptions: buildGridOptions,
     buildIntradayDatasets: buildIntradayDatasets,
     buildStatsHtml: buildStatsHtml,
@@ -1920,6 +2008,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getStoredAppearancePreference: getStoredAppearancePreference,
     getStoredThemeFamily: getStoredThemeFamily,
     getStoredThemePreference: getStoredThemePreference,
+    fetchJsonWithBackoff: fetchJsonWithBackoff,
     hasPriceData: hasPriceData,
     isThemeMenuSelectionTarget: isThemeMenuSelectionTarget,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
