@@ -1,0 +1,69 @@
+# Rudolph
+
+## Install Locally For Development
+
+1. Open Chrome and go to `chrome://extensions`.
+2. Turn on `Developer mode`.
+3. Click `Load unpacked`.
+4. Select the cloned `rudolph` repository folder.
+5. Open a new tab. Chrome should load Rudolph as the new-tab page.
+
+After editing files, return to `chrome://extensions` and click the reload button on the Rudolph extension card, then open a new tab again.
+
+## What Rudolph Is
+
+Rudolph is a customizable Chrome new-tab dashboard for tracking market symbols. It shows live quote data, after-hours movement, and draggable chart widgets for intraday, monthly, yearly, and all-time views.
+
+The dashboard stores layout, selected symbols, hidden widgets, theme, and appearance preferences locally in the browser. It does not require a backend service.
+
+## Features
+
+- Live stock watchlist with search and removable tracked symbols.
+- Default fresh-install watchlist using broad popular market symbols.
+- Header quote summary with regular and extended-hours prices.
+- Draggable and resizable Gridstack dashboard widgets.
+- Chart.js visualizations for hour, day, month, year, and all-time ranges.
+- Theme families for Samsung OneUI, Apple Liquid Glass, Cisco Momentum, Windows Fluent, Google Material, and IBM Carbon.
+- Independent appearance mode: `Auto`, `Light`, or `Dark`.
+- Auto appearance follows Chrome/system color settings where supported.
+
+## Data Source
+
+Stock data is fetched directly from Yahoo Finance endpoints declared in `manifest.json`:
+
+```json
+"host_permissions": [
+  "https://query1.finance.yahoo.com/*"
+]
+```
+
+The app includes graceful fallback behavior for chart and quote loading, and shows placeholders while data is still loading.
+
+## Development
+
+This project is plain HTML, CSS, and JavaScript. There is no build step required for normal extension development.
+
+Useful checks:
+
+```bash
+node --test test/extended-hours.test.js
+node --check js/app.js
+```
+
+Useful local preview:
+
+```bash
+python3 -m http.server 8765
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8765/index.html
+```
+
+The extension entrypoint is `newtab.html`; `index.html` is useful for local browser preview.
+
+## Repository Notes
+
+This repository is intended to be public and personal. Avoid company-specific defaults, private links, private logic, or personally identifiable information in committed source.
