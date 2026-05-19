@@ -57,6 +57,8 @@ body, body.theme-oneui, body.theme-oneui.mode-dark, body.theme-dark {
   --pill-blur:     blur(4px);
   --hover-bg:      rgba(255,255,255,.04);
   --menu-shadow:   0 8px 32px rgba(0,0,0,.5);
+  --menu-bg:       var(--surface-hi);
+  --menu-blur:     blur(24px);
   --skel-edge:     rgba(255,255,255,.04);
   --skel-mid:      rgba(91,155,244,.08);
   --grid-line:     rgba(255,255,255,.03);
@@ -110,6 +112,8 @@ body.theme-light {
   --pill-blur:     blur(4px);
   --hover-bg:      rgba(11,99,206,.08);
   --menu-shadow:   0 12px 32px rgba(26,40,63,.18);
+  --menu-bg:       var(--surface-hi);
+  --menu-blur:     blur(24px);
   --skel-edge:     rgba(26,40,63,.06);
   --skel-mid:      rgba(11,99,206,.12);
   --grid-line:     rgba(34,49,75,.10);
@@ -158,12 +162,15 @@ body.theme-glass {
   --shadow:        0 4px 24px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.05) inset;
   --card-bg:       linear-gradient(175deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
   --card-border:   1px solid rgba(255,255,255,.12);
-  --card-blur:     blur(24px);
+  --card-blur:     none;
   --hdr-bg:        rgba(255,255,255,.08);
   --hdr-blur:      blur(24px);
   --ftr-bg:        rgba(255,255,255,.06);
   --pill-bg:       rgba(255,255,255,.08);
   --pill-blur:     blur(18px);
+  --menu-bg:       linear-gradient(175deg, rgba(44,38,74,.92) 0%, rgba(31,28,58,.86) 100%);
+  --menu-blur:     blur(36px) saturate(180%);
+  --menu-shadow:   0 24px 64px rgba(0,0,0,.58), inset 0 .5px 0 rgba(255,255,255,.18);
   --skel-mid:      rgba(255,255,255,.07);
   --grid-line:     rgba(255,255,255,.04);
   --pad-card:      12px 18px;
@@ -423,7 +430,9 @@ body.theme-glass.mode-light {
   --ftr-bg:        rgba(255,255,255,.64);
   --pill-bg:       rgba(0,122,255,.08);
   --hover-bg:      rgba(0,122,255,.08);
-  --menu-shadow:   0 16px 40px rgba(30,42,64,.18);
+  --menu-bg:       linear-gradient(175deg, rgba(255,255,255,.94) 0%, rgba(242,245,250,.86) 100%);
+  --menu-blur:     blur(36px) saturate(180%);
+  --menu-shadow:   0 18px 48px rgba(30,42,64,.24), inset 0 .5px 0 rgba(255,255,255,.9);
   --skel-edge:     rgba(30,42,64,.06);
   --skel-mid:      rgba(0,122,255,.12);
   --grid-line:     rgba(32,45,68,.09);
@@ -696,13 +705,13 @@ header {
   top: calc(100% + 8px);
   right: 0;
   min-width: 210px;
-  background: var(--surface-hi);
+  background: var(--menu-bg, var(--surface-hi));
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--menu-shadow, 0 8px 32px rgba(0,0,0,.5));
   z-index: 9999;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: var(--menu-blur, blur(24px));
+  -webkit-backdrop-filter: var(--menu-blur, blur(24px));
   overflow: hidden;
 }
 
@@ -855,13 +864,13 @@ header {
   display: none;
   position: fixed;
   width: 300px;
-  background: var(--surface-hi);
+  background: var(--menu-bg, var(--surface-hi));
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--menu-shadow, 0 8px 32px rgba(0,0,0,.5));
   z-index: 9999;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: var(--menu-blur, blur(24px));
+  -webkit-backdrop-filter: var(--menu-blur, blur(24px));
   overflow: hidden;
 }
 

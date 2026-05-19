@@ -77,6 +77,13 @@ function loadApp() {
   return context.module.exports;
 }
 
+function cssRuleBlock(css, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = css.match(new RegExp(escaped + '\\s*\\{([\\s\\S]*?)\\n\\}'));
+  assert.ok(match, `Missing CSS rule for ${selector}`);
+  return match[1];
+}
+
 test('splitIntradaySeries separates premarket and postmarket prices from regular prices', () => {
   const app = loadApp();
   const timestamps = [
@@ -479,21 +486,44 @@ test('carbon theme CSS uses IBM Carbon theme tokens and flat layers', () => {
 
 test('glass theme CSS uses Apple Liquid Glass references and system colors', () => {
   const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+  const dark = cssRuleBlock(css, 'body.theme-glass');
+  const light = cssRuleBlock(css, 'body.theme-glass.mode-light');
 
   assert.match(css, /getdesign\.md\/apple\/design-md/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--bg:\s*#000000;/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--text:\s*#f5f5f7;/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--accent:\s*#0a84ff;/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--green:\s*#30d158;/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--red:\s*#ff453a;/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--card-blur:\s*blur\(24px\);/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--hdr-blur:\s*blur\(24px\);/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--pill-blur:\s*blur\(18px\);/);
-  assert.match(css, /body\.theme-glass\s*\{[\s\S]*--title-tracking:\s*0px;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--bg:\s*#f5f5f7;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--text:\s*#1d1d1f;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--accent:\s*#007aff;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--green:\s*#34c759;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--red:\s*#ff3b30;/);
-  assert.match(css, /body\.theme-glass\.mode-light\s*\{[\s\S]*--after-hours:\s*#ffcc00;/);
+  assert.match(dark, /--bg:\s*#000000;/);
+  assert.match(dark, /--text:\s*#f5f5f7;/);
+  assert.match(dark, /--accent:\s*#0a84ff;/);
+  assert.match(dark, /--green:\s*#30d158;/);
+  assert.match(dark, /--red:\s*#ff453a;/);
+  assert.match(dark, /--hdr-blur:\s*blur\(24px\);/);
+  assert.match(dark, /--pill-blur:\s*blur\(18px\);/);
+  assert.match(dark, /--title-tracking:\s*0px;/);
+  assert.match(light, /--bg:\s*#f5f5f7;/);
+  assert.match(light, /--text:\s*#1d1d1f;/);
+  assert.match(light, /--accent:\s*#007aff;/);
+  assert.match(light, /--green:\s*#34c759;/);
+  assert.match(light, /--red:\s*#ff3b30;/);
+  assert.match(light, /--after-hours:\s*#ffcc00;/);
+});
+
+test('glass theme gives dropdowns a dense blurred Liquid Glass surface', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+  const dark = cssRuleBlock(css, 'body.theme-glass');
+
+  assert.match(dark, /--menu-bg:\s*linear-gradient\(175deg, rgba\(44,38,74,\.92\) 0%, rgba\(31,28,58,\.86\) 100%\);/);
+  assert.match(dark, /--menu-blur:\s*blur\(36px\) saturate\(180%\);/);
+  assert.match(dark, /--menu-shadow:\s*0 24px 64px rgba\(0,0,0,\.58\), inset 0 \.5px 0 rgba\(255,255,255,\.18\);/);
+  assert.match(css, /\.theme-menu,[\s\S]*\.widget-menu\s*\{[\s\S]*background:\s*var\(--menu-bg, var\(--surface-hi\)\);/);
+  assert.match(css, /\.theme-menu,[\s\S]*\.widget-menu\s*\{[\s\S]*backdrop-filter:\s*var\(--menu-blur, blur\(24px\)\);/);
+  assert.match(css, /\.ticker-panel\s*\{[\s\S]*background:\s*var\(--menu-bg, var\(--surface-hi\)\);/);
+  assert.match(css, /\.ticker-panel\s*\{[\s\S]*backdrop-filter:\s*var\(--menu-blur, blur\(24px\)\);/);
+});
+
+test('glass theme avoids live backdrop blur on large chart cards', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+  const dark = cssRuleBlock(css, 'body.theme-glass');
+
+  assert.match(dark, /--card-blur:\s*none;/);
+  assert.match(dark, /--hdr-blur:\s*blur\(24px\);/);
+  assert.match(dark, /--menu-blur:\s*blur\(36px\) saturate\(180%\);/);
 });
