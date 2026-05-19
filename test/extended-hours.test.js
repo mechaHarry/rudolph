@@ -456,3 +456,23 @@ test('webex theme CSS uses Momentum stable token values', () => {
   assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--text:\s*#000000f2;/);
   assert.match(css, /body\.theme-webex\.mode-light\s*\{[\s\S]*--accent:\s*#1170cf;/);
 });
+
+test('carbon theme CSS uses IBM Carbon theme tokens and flat layers', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'styles.css'), 'utf8');
+
+  assert.match(css, /getdesign\.md\/ibm\/design-md/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--bg:\s*#161616;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--surface:\s*#262626;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--surface-hi:\s*#393939;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--text:\s*#f4f4f4;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--accent:\s*#4589ff;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--card-blur:\s*none;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--hdr-blur:\s*none;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--menu-shadow:\s*none;/);
+  assert.match(css, /body\.theme-carbon\s*\{[\s\S]*--font:\s*'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, '\.SFNSText-Regular', sans-serif;/);
+  assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--bg:\s*#ffffff;/);
+  assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--surface:\s*#f4f4f4;/);
+  assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--surface-hi:\s*#ffffff;/);
+  assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--text:\s*#161616;/);
+  assert.match(css, /body\.theme-carbon\.mode-light\s*\{[\s\S]*--accent:\s*#0f62fe;/);
+});

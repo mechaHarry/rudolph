@@ -340,10 +340,11 @@ body.theme-material {
 }
 
 /* ── IBM Carbon ──────────────────────────────── */
-/* Ref: carbondesignsystem.com. Gray 100 (g100) theme — darkest.
+/* Ref: getdesign.md/ibm/design-md and carbondesignsystem.com.
+   Gray 100 (g100) theme — darkest.
    Background #161616, Layer-01 #262626 (Gray 90), Layer-02 #393939 (Gray 80).
    $text-primary #f4f4f4, $text-secondary #c6c6c6, $text-helper #8d8d8d.
-   $interactive (Blue 60) #0f62fe. $support-success #42be65, $support-error #fa4d56.
+   $interactive (Blue 50) #4589ff. $support-success #42be65, $support-error #fa4d56.
    All corner radii 0 (rectangular). No shadows — layering model only.
    8px mini unit. Condensed gutter 1px. Productive type: 14px base.
    Font: IBM Plex Sans/Mono with exact fallback stacks.
@@ -371,20 +372,22 @@ body.theme-carbon {
   --shadow:        none;
   --card-bg:       rgba(38,38,38,.8);
   --card-border:   1px solid #393939;
-  --card-blur:     blur(12px);
+  --card-blur:     none;
   --hdr-bg:        rgba(22,22,22,.75);
-  --hdr-blur:      blur(12px);
+  --hdr-blur:      none;
   --ftr-bg:        rgba(22,22,22,.7);
   --pill-bg:       #393939;
   --pill-blur:     none;
+  --hover-bg:      rgba(141,141,141,.16);
+  --menu-shadow:   none;
   --skel-mid:      rgba(69,137,255,.08);
   --grid-line:     #393939;
   --pad-card:      16px;
   --pad-hdr:       0 16px;
   --gap-grid:      1px;
   --gap-hdr:       0px;
-  --font:          'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono:     'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace;
+  --font:          'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', sans-serif;
+  --font-mono:     'IBM Plex Mono', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', monospace;
   --title-weight:  600;
   --title-tracking: 0.16px;
   --btn-active-text:   #ffffff;
@@ -519,7 +522,7 @@ body.theme-carbon.mode-light {
   --bg-grad:       #ffffff;
   --glow-base:     #e0e5ee;
   --surface:       #f4f4f4;
-  --surface-hi:    #e8e8e8;
+  --surface-hi:    #ffffff;
   --border:        #c6c6c6;
   --text:          #161616;
   --logo-stroke:   #161616;
@@ -532,11 +535,13 @@ body.theme-carbon.mode-light {
   --shadow:        none;
   --card-bg:       rgba(244,244,244,.88);
   --card-border:   1px solid #c6c6c6;
+  --card-blur:     none;
   --hdr-bg:        rgba(255,255,255,.86);
+  --hdr-blur:      none;
   --ftr-bg:        rgba(244,244,244,.78);
   --pill-bg:       #e0e0e0;
-  --hover-bg:      rgba(15,98,254,.08);
-  --menu-shadow:   0 12px 32px rgba(22,22,22,.14);
+  --hover-bg:      rgba(141,141,141,.12);
+  --menu-shadow:   none;
   --skel-edge:     rgba(22,22,22,.05);
   --skel-mid:      rgba(15,98,254,.10);
   --grid-line:     #e0e0e0;
