@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>Rudolph Dashboard</title>
   <link rel="stylesheet" href="css/gridstack.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
@@ -10,8 +11,19 @@
 <body>
 <script>
 (function(){
-  var t=localStorage.getItem('rudolph-theme')||'oneui';
-  if(t!=='oneui')document.body.className='theme-'+t;
+  var families=['oneui','glass','webex','fluent','material','carbon'];
+  var rawTheme=localStorage.getItem('rudolph-theme');
+  var rawAppearance=localStorage.getItem('rudolph-appearance');
+  var family=families.indexOf(rawTheme)!==-1?rawTheme:'oneui';
+  var pref=rawAppearance||(rawTheme==='light'||rawTheme==='dark'?rawTheme:(rawTheme==='system'?'auto':'auto'));
+  if(pref==='system')pref='auto';
+  if(pref!=='auto'&&pref!=='light'&&pref!=='dark')pref='auto';
+  var mode=pref;
+  if(pref==='auto'){
+    try{mode=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}
+    catch(e){mode='dark';}
+  }
+  document.body.className='theme-'+family+' mode-'+mode;
 })();
 </script>
 <div id="glow-bg" aria-hidden="true"></div>
@@ -71,6 +83,14 @@
         <button type="button" data-theme="fluent" role="menuitemradio">Windows Fluent</button>
         <button type="button" data-theme="material" role="menuitemradio">Google Material</button>
         <button type="button" data-theme="carbon" role="menuitemradio">IBM Carbon</button>
+        <div class="theme-menu-footer" role="group" aria-label="Appearance">
+          <div class="theme-menu-footer-label">Appearance</div>
+          <div class="appearance-toggle" role="radiogroup" aria-label="Appearance mode">
+            <button type="button" data-appearance="auto" role="radio">Auto</button>
+            <button type="button" data-appearance="light" role="radio">Light</button>
+            <button type="button" data-appearance="dark" role="radio">Dark</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

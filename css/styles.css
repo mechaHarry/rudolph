@@ -23,8 +23,9 @@
    Components     --btn-active-text  --btn-active-shadow
    ═══════════════════════════════════════════════ */
 
-/* ── Samsung OneUI (default) ─────────────────── */
-body, body.theme-oneui {
+/* ── Samsung OneUI dark (default) ────────────── */
+body, body.theme-oneui, body.theme-oneui.mode-dark, body.theme-dark {
+  color-scheme: dark;
   --bg:            #0d1017;
   --bg-grad:       #0d1017;
   --glow-base:     #2a4070;
@@ -32,6 +33,7 @@ body, body.theme-oneui {
   --surface-hi:    #1e2538;
   --border:        rgba(255,255,255,.06);
   --text:          #edf0f7;
+  --logo-stroke:   #ffffff;
   --accent:        #5b9bf4;
   --accent-glow:   rgba(91,155,244,.35);
   --green:         #3ddc84;
@@ -53,6 +55,9 @@ body, body.theme-oneui {
   --ftr-bg:        rgba(13,16,23,.6);
   --pill-bg:       rgba(255,255,255,.05);
   --pill-blur:     blur(4px);
+  --hover-bg:      rgba(255,255,255,.04);
+  --menu-shadow:   0 8px 32px rgba(0,0,0,.5);
+  --skel-edge:     rgba(255,255,255,.04);
   --skel-mid:      rgba(91,155,244,.08);
   --grid-line:     rgba(255,255,255,.03);
   --pad-card:      10px 16px;
@@ -64,6 +69,59 @@ body, body.theme-oneui {
   --title-weight:  700;
   --title-tracking:-0.2px;
   --btn-active-text:   #0d1017;
+  --btn-active-shadow: 0 1px 6px var(--accent-glow);
+  --motion-dur:        300ms;
+  --motion-ease:       cubic-bezier(.22, .61, .36, 1);
+  --motion-stagger:    60ms;
+}
+
+/* ── Samsung OneUI light ─────────────────────── */
+body.theme-oneui.mode-light,
+body.theme-light {
+  color-scheme: light;
+  --bg:            #f4f7fb;
+  --bg-grad:       #f4f7fb;
+  --glow-base:     #dbe7f6;
+  --surface:       #ffffff;
+  --surface-hi:    #eef3f9;
+  --border:        rgba(34,49,75,.14);
+  --text:          #172033;
+  --logo-stroke:   #172033;
+  --accent:        #0b63ce;
+  --accent-glow:   rgba(11,99,206,.22);
+  --green:         #16834a;
+  --green-glow:    rgba(22,131,74,.25);
+  --red:           #c43832;
+  --after-hours:   #a35d00;
+  --radius-xs:     10px;
+  --radius-sm:     14px;
+  --radius-md:     20px;
+  --radius-lg:     26px;
+  --radius-pill:   100px;
+  --radius-btn:    8px;
+  --shadow:        0 2px 12px rgba(26,40,63,.12);
+  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.92) 0%, rgba(246,249,253,.88) 100%);
+  --card-border:   1px solid var(--border);
+  --card-blur:     blur(10px);
+  --hdr-bg:        rgba(255,255,255,.82);
+  --hdr-blur:      blur(14px);
+  --ftr-bg:        rgba(255,255,255,.75);
+  --pill-bg:       rgba(11,99,206,.08);
+  --pill-blur:     blur(4px);
+  --hover-bg:      rgba(11,99,206,.08);
+  --menu-shadow:   0 12px 32px rgba(26,40,63,.18);
+  --skel-edge:     rgba(26,40,63,.06);
+  --skel-mid:      rgba(11,99,206,.12);
+  --grid-line:     rgba(34,49,75,.10);
+  --pad-card:      10px 16px;
+  --pad-hdr:       12px 24px;
+  --gap-grid:      8px;
+  --gap-hdr:       16px;
+  --font:          'One UI Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:     'Roboto Mono', 'SF Mono', monospace;
+  --title-weight:  700;
+  --title-tracking: 0px;
+  --btn-active-text:   #ffffff;
   --btn-active-shadow: 0 1px 6px var(--accent-glow);
   --motion-dur:        300ms;
   --motion-ease:       cubic-bezier(.22, .61, .36, 1);
@@ -331,6 +389,154 @@ body.theme-carbon {
   --motion-stagger:    40ms;
 }
 
+/* ── Light appearance variants for each theme family ─ */
+body.theme-glass.mode-light {
+  color-scheme: light;
+  --bg:            #f7f8fb;
+  --bg-grad:       #f7f8fb;
+  --glow-base:     #e2e8f3;
+  --surface:       rgba(255,255,255,.66);
+  --surface-hi:    rgba(255,255,255,.82);
+  --border:        rgba(32,45,68,.14);
+  --text:          #171b26;
+  --logo-stroke:   #171b26;
+  --accent:        #007aff;
+  --accent-glow:   rgba(0,122,255,.24);
+  --green:         #248a3d;
+  --green-glow:    rgba(36,138,61,.25);
+  --red:           #d70015;
+  --after-hours:   #a15c00;
+  --shadow:        0 8px 28px rgba(30,42,64,.14), 0 1px 0 rgba(255,255,255,.9) inset;
+  --card-bg:       linear-gradient(175deg, rgba(255,255,255,.74) 0%, rgba(255,255,255,.52) 100%);
+  --card-border:   1px solid rgba(32,45,68,.12);
+  --hdr-bg:        rgba(255,255,255,.72);
+  --ftr-bg:        rgba(255,255,255,.64);
+  --pill-bg:       rgba(0,122,255,.08);
+  --hover-bg:      rgba(0,122,255,.08);
+  --menu-shadow:   0 16px 40px rgba(30,42,64,.18);
+  --skel-edge:     rgba(30,42,64,.06);
+  --skel-mid:      rgba(0,122,255,.12);
+  --grid-line:     rgba(32,45,68,.09);
+}
+
+body.theme-webex.mode-light {
+  color-scheme: light;
+  --bg:            #f5f7f8;
+  --bg-grad:       #f5f7f8;
+  --glow-base:     #d7eef4;
+  --surface:       #ffffff;
+  --surface-hi:    #eef6f8;
+  --border:        rgba(0,74,92,.14);
+  --text:          #122126;
+  --logo-stroke:   #122126;
+  --accent:        #087d8f;
+  --accent-glow:   rgba(8,125,143,.22);
+  --green:         #148a44;
+  --green-glow:    rgba(20,138,68,.24);
+  --red:           #c23b45;
+  --after-hours:   #9b6100;
+  --shadow:        0 2px 10px rgba(4,40,52,.12);
+  --card-bg:       rgba(255,255,255,.86);
+  --card-border:   1px solid rgba(0,74,92,.12);
+  --hdr-bg:        rgba(255,255,255,.78);
+  --ftr-bg:        rgba(255,255,255,.72);
+  --pill-bg:       rgba(8,125,143,.08);
+  --hover-bg:      rgba(8,125,143,.08);
+  --menu-shadow:   0 12px 32px rgba(4,40,52,.18);
+  --skel-edge:     rgba(4,40,52,.06);
+  --skel-mid:      rgba(8,125,143,.12);
+  --grid-line:     rgba(0,74,92,.08);
+}
+
+body.theme-fluent.mode-light {
+  color-scheme: light;
+  --bg:            #f3f3f3;
+  --bg-grad:       #f3f3f3;
+  --glow-base:     #d9e6f2;
+  --surface:       #ffffff;
+  --surface-hi:    #fafafa;
+  --border:        rgba(0,0,0,.12);
+  --text:          #1b1b1b;
+  --logo-stroke:   #1b1b1b;
+  --accent:        #0067c0;
+  --accent-glow:   rgba(0,103,192,.22);
+  --green:         #0f7b0f;
+  --green-glow:    rgba(15,123,15,.22);
+  --red:           #c42b1c;
+  --after-hours:   #8a5a00;
+  --shadow:        0 2px 4px rgba(0,0,0,.12), 0 0 2px rgba(0,0,0,.08);
+  --card-bg:       rgba(255,255,255,.76);
+  --card-border:   1px solid rgba(0,0,0,.12);
+  --hdr-bg:        rgba(255,255,255,.86);
+  --ftr-bg:        rgba(255,255,255,.72);
+  --pill-bg:       rgba(0,0,0,.04);
+  --hover-bg:      rgba(0,0,0,.05);
+  --menu-shadow:   0 12px 32px rgba(0,0,0,.16);
+  --skel-edge:     rgba(0,0,0,.05);
+  --skel-mid:      rgba(0,103,192,.10);
+  --grid-line:     rgba(0,0,0,.08);
+}
+
+body.theme-material.mode-light {
+  color-scheme: light;
+  --bg:            #fffbff;
+  --bg-grad:       #fffbff;
+  --glow-base:     #e9ddf4;
+  --surface:       #fef7ff;
+  --surface-hi:    #f7eff7;
+  --border:        #cac4d0;
+  --text:          #1d1b20;
+  --logo-stroke:   #1d1b20;
+  --accent:        #6750a4;
+  --accent-glow:   rgba(103,80,164,.22);
+  --green:         #386a20;
+  --green-glow:    rgba(56,106,32,.24);
+  --red:           #ba1a1a;
+  --after-hours:   #795900;
+  --shadow:        0 1px 2px rgba(0,0,0,.12), 0 1px 3px 1px rgba(0,0,0,.08);
+  --card-bg:       rgba(254,247,255,.86);
+  --card-border:   none;
+  --hdr-bg:        rgba(254,247,255,.86);
+  --ftr-bg:        rgba(254,247,255,.76);
+  --pill-bg:       rgba(103,80,164,.08);
+  --hover-bg:      rgba(103,80,164,.08);
+  --menu-shadow:   0 12px 32px rgba(29,27,32,.16);
+  --skel-edge:     rgba(29,27,32,.05);
+  --skel-mid:      rgba(103,80,164,.12);
+  --grid-line:     rgba(73,69,79,.10);
+  --btn-active-text:   #ffffff;
+}
+
+body.theme-carbon.mode-light {
+  color-scheme: light;
+  --bg:            #ffffff;
+  --bg-grad:       #ffffff;
+  --glow-base:     #e0e5ee;
+  --surface:       #f4f4f4;
+  --surface-hi:    #e8e8e8;
+  --border:        #c6c6c6;
+  --text:          #161616;
+  --logo-stroke:   #161616;
+  --accent:        #0f62fe;
+  --accent-glow:   rgba(15,98,254,.20);
+  --green:         #198038;
+  --green-glow:    rgba(25,128,56,.22);
+  --red:           #da1e28;
+  --after-hours:   #8a5a00;
+  --shadow:        none;
+  --card-bg:       rgba(244,244,244,.88);
+  --card-border:   1px solid #c6c6c6;
+  --hdr-bg:        rgba(255,255,255,.86);
+  --ftr-bg:        rgba(244,244,244,.78);
+  --pill-bg:       #e0e0e0;
+  --hover-bg:      rgba(15,98,254,.08);
+  --menu-shadow:   0 12px 32px rgba(22,22,22,.14);
+  --skel-edge:     rgba(22,22,22,.05);
+  --skel-mid:      rgba(15,98,254,.10);
+  --grid-line:     #e0e0e0;
+  --btn-active-text:   #ffffff;
+}
+
 /* ═══════════════════════════════════════════════
    GLOW BACKGROUND
    Static brand-colored backdrop behind all content.
@@ -392,6 +598,11 @@ header {
 }
 
 .brand svg { width: 32px; height: 32px; }
+
+.brand-icon path,
+#loader svg path {
+  stroke: var(--logo-stroke, #ffffff);
+}
 
 .brand-icon .nose-ring {
   animation: nose-pulse 4s ease-in-out infinite;
@@ -475,7 +686,7 @@ header {
   background: var(--surface-hi);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  box-shadow: var(--menu-shadow, 0 8px 32px rgba(0,0,0,.5));
   z-index: 9999;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -511,9 +722,49 @@ header {
   color: var(--accent);
 }
 
-.theme-menu button.active::after {
+.theme-menu button[data-theme].active::after {
   content: '\2713';
   font-size: 12px;
+}
+
+.theme-menu-footer {
+  border-top: 1px solid var(--border);
+  padding: 10px 12px 12px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.theme-menu-footer-label {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  margin-bottom: 8px;
+  opacity: .68;
+  text-transform: uppercase;
+}
+
+.appearance-toggle {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.theme-menu .appearance-toggle button {
+  justify-content: center;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.theme-menu .appearance-toggle button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--btn-active-text);
+  box-shadow: var(--btn-active-shadow);
 }
 
 .widget-menu-empty {
@@ -556,7 +807,7 @@ header {
   background: var(--surface-hi);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  box-shadow: var(--menu-shadow, 0 8px 32px rgba(0,0,0,.5));
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding: 10px 14px;
@@ -594,7 +845,7 @@ header {
   background: var(--surface-hi);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  box-shadow: var(--menu-shadow, 0 8px 32px rgba(0,0,0,.5));
   z-index: 9999;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -655,7 +906,7 @@ header {
   transition: background .12s;
 }
 
-.ticker-item:hover { background: rgba(255,255,255,.04); }
+.ticker-item:hover { background: var(--hover-bg, rgba(255,255,255,.04)); }
 
 .ticker-item.active {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -698,7 +949,7 @@ header {
 
 .ticker-item-action:hover {
   color: var(--text);
-  background: rgba(255,255,255,.06);
+  background: var(--hover-bg, rgba(255,255,255,.06));
 }
 
 .ticker-item-action.remove:hover { color: var(--red); }
@@ -967,9 +1218,9 @@ main.grid-stack {
 
 .skel {
   background: linear-gradient(90deg,
-    rgba(255,255,255,.04) 25%,
+    var(--skel-edge, rgba(255,255,255,.04)) 25%,
     var(--skel-mid) 50%,
-    rgba(255,255,255,.04) 75%);
+    var(--skel-edge, rgba(255,255,255,.04)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
   border-radius: var(--radius-xs);
@@ -1163,6 +1414,71 @@ body.theme-carbon .widget-menu {
   border-radius: 0;
 }
 
+/* ── Light-specific effect corrections ───────── */
+body.theme-glass.mode-light .card {
+  border: 1px solid rgba(32,45,68,.12);
+  border-top-color: rgba(255,255,255,.95);
+  box-shadow: 0 8px 28px rgba(30,42,64,.14), inset 0 .5px 0 rgba(255,255,255,.95);
+}
+
+body.theme-glass.mode-light .card:hover {
+  box-shadow: 0 10px 32px rgba(30,42,64,.18), 0 1px 0 rgba(255,255,255,.95) inset;
+}
+
+body.theme-glass.mode-light .chart-tooltip {
+  background: rgba(255,255,255,.88);
+  border: 1px solid rgba(32,45,68,.16);
+  box-shadow: 0 14px 36px rgba(30,42,64,.18),
+              inset 0 .5px 0 rgba(255,255,255,.9);
+}
+
+body.theme-fluent.mode-light header {
+  border: 1px solid rgba(0,0,0,.12);
+}
+
+body.theme-fluent.mode-light .card {
+  border: 1px solid rgba(0,0,0,.10);
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+body.theme-fluent.mode-light .card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,.12), 0 0 2px rgba(0,0,0,.08);
+  border-color: rgba(0,0,0,.14);
+}
+
+body.theme-material.mode-light .card {
+  box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 1px 3px 1px rgba(0,0,0,.08);
+}
+
+body.theme-material.mode-light .card:hover {
+  box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 2px 6px 2px rgba(0,0,0,.08);
+  background: #fef7ff;
+}
+
+body.theme-material.mode-light header {
+  box-shadow: 0 1px 2px rgba(0,0,0,.12);
+}
+
+body.theme-carbon.mode-light .card:hover {
+  background: #ffffff;
+}
+
+body.theme-carbon.mode-light .stat-pill {
+  background: #e0e0e0;
+}
+
+body.theme-carbon.mode-light .stat-pill.stat-up {
+  background: rgba(25,128,56,.12);
+}
+
+body.theme-carbon.mode-light .stat-pill.stat-down {
+  background: rgba(218,30,40,.12);
+}
+
+body.theme-carbon.mode-light .stat-pill.stat-prior {
+  background: rgba(15,98,254,.12);
+}
+
 /* ═══════════════════════════════════════════════
    LOADING OVERLAY — Rudolph deer with sniffing nose
    Covers the page until content is ready, then fades out.
@@ -1213,6 +1529,7 @@ body.theme-carbon .widget-menu {
 
 #loader .loader-nose {
   transform-origin: 36px 9px;
+  stroke: var(--red);
   will-change: transform, opacity;
   animation: nose-throb .6s ease-in-out infinite;
 }

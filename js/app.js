@@ -21,6 +21,14 @@ updateClock();
 
 
 // ─── Theme Switcher ──────────────────────────────────
+var THEME_STORAGE_KEY = 'rudolph-theme';
+var APPEARANCE_STORAGE_KEY = 'rudolph-appearance';
+var DEFAULT_THEME_FAMILY = 'oneui';
+var DEFAULT_APPEARANCE_PREFERENCE = 'auto';
+var THEME_FAMILIES = ['oneui', 'glass', 'webex', 'fluent', 'material', 'carbon'];
+var APPEARANCE_PREFERENCES = ['auto', 'light', 'dark'];
+var systemThemeListenerInstalled = false;
+
 function getThemeColors() {
   var cs = getComputedStyle(document.body);
   var rSm = parseInt(cs.getPropertyValue('--radius-sm'), 10);
@@ -37,6 +45,87 @@ function getThemeColors() {
     font:      cs.getPropertyValue('--font').trim(),
     fontMono:  cs.getPropertyValue('--font-mono').trim(),
   };
+}
+
+function normalizeThemePreference(themeId) {
+  return normalizeThemeFamily(themeId);
+}
+
+function normalizeThemeFamily(themeId) {
+  return THEME_FAMILIES.indexOf(themeId) !== -1 ? themeId : DEFAULT_THEME_FAMILY;
+}
+
+function normalizeAppearancePreference(appearance) {
+  if (appearance === 'system') return 'auto';
+  return APPEARANCE_PREFERENCES.indexOf(appearance) !== -1
+    ? appearance
+    : DEFAULT_APPEARANCE_PREFERENCE;
+}
+
+function getPreferredColorScheme(win) {
+  win = win || (typeof window !== 'undefined' ? window : null);
+  if (!win || typeof win.matchMedia !== 'function') return 'dark';
+
+  try {
+    if (win.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    if (win.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+  } catch (e) { /* fall through to stable dark default */ }
+
+  return 'dark';
+}
+
+function resolveAppearanceMode(appearance, win) {
+  var pref = normalizeAppearancePreference(appearance);
+  return pref === 'auto' ? getPreferredColorScheme(win) : pref;
+}
+
+function resolveThemeId(themeId, win) {
+  return resolveAppearanceMode(themeId === 'system' ? 'auto' : themeId, win);
+}
+
+function themeClassNameFor(themeFamily, resolvedAppearance) {
+  var family = normalizeThemeFamily(themeFamily);
+  var appearance = resolvedAppearance === 'light' ? 'light' : 'dark';
+  return 'theme-' + family + ' mode-' + appearance;
+}
+
+function buildThemeState(themeFamily, appearancePreference, win) {
+  var family = normalizeThemeFamily(themeFamily);
+  var pref = normalizeAppearancePreference(appearancePreference);
+  var resolved = resolveAppearanceMode(pref, win);
+  return {
+    themeFamily: family,
+    appearancePreference: pref,
+    resolvedAppearance: resolved,
+    className: themeClassNameFor(family, resolved)
+  };
+}
+
+function getStoredThemeFamily(storage) {
+  storage = storage || localStorage;
+  var value = storage && typeof storage.getItem === 'function'
+    ? storage.getItem(THEME_STORAGE_KEY)
+    : null;
+  return normalizeThemeFamily(value || DEFAULT_THEME_FAMILY);
+}
+
+function getStoredAppearancePreference(storage) {
+  storage = storage || localStorage;
+  var value = storage && typeof storage.getItem === 'function'
+    ? storage.getItem(APPEARANCE_STORAGE_KEY)
+    : null;
+  if (value) return normalizeAppearancePreference(value);
+
+  var legacyTheme = storage && typeof storage.getItem === 'function'
+    ? storage.getItem(THEME_STORAGE_KEY)
+    : null;
+  if (legacyTheme === 'system') return 'auto';
+  if (legacyTheme === 'light' || legacyTheme === 'dark') return legacyTheme;
+  return DEFAULT_APPEARANCE_PREFERENCE;
+}
+
+function getStoredThemePreference(storage) {
+  return getStoredThemeFamily(storage);
 }
 
 // ─── External tooltip handler (frosted glass) ───────
@@ -93,28 +182,83 @@ function externalTooltipHandler(context) {
   el.classList.add('visible');
 }
 
-function applyTheme(themeId) {
+function applyThemeState(themeFamily, appearancePreference, options) {
+  options = options || {};
+  var state = buildThemeState(themeFamily, appearancePreference);
   var wasReady = document.body.classList.contains('ready');
-  document.body.className = themeId === 'oneui' ? '' : 'theme-' + themeId;
+  document.body.className = state.className;
+  if (document.body.dataset) {
+    document.body.dataset.themeFamily = state.themeFamily;
+    document.body.dataset.appearancePreference = state.appearancePreference;
+    document.body.dataset.resolvedAppearance = state.resolvedAppearance;
+  }
   if (wasReady) document.body.classList.add('ready');
-  localStorage.setItem('rudolph-theme', themeId);
+  if (!options.skipThemeStorage) localStorage.setItem(THEME_STORAGE_KEY, state.themeFamily);
+  if (!options.skipAppearanceStorage) localStorage.setItem(APPEARANCE_STORAGE_KEY, state.appearancePreference);
 
   var sel = $('theme-select');
-  if (sel && sel.value !== themeId) sel.value = themeId;
-  updateThemeMenu(themeId);
+  if (sel && sel.value !== state.themeFamily) sel.value = state.themeFamily;
+  updateThemeMenu(state);
 
   refreshAllChartColors();
   syncGridToTheme();
 }
 
-function updateThemeMenu(themeId) {
+function applyTheme(themeFamily, options) {
+  options = options || {};
+  options.skipAppearanceStorage = true;
+  applyThemeState(themeFamily, getStoredAppearancePreference(), options);
+}
+
+function applyAppearancePreference(appearancePreference, options) {
+  options = options || {};
+  options.skipThemeStorage = true;
+  applyThemeState(getStoredThemeFamily(), appearancePreference, options);
+}
+
+function updateThemeMenu(state) {
   if (!document.querySelectorAll) return;
-  var buttons = document.querySelectorAll('[data-theme]');
-  buttons.forEach(function(btn) {
-    var active = btn.dataset.theme === themeId;
+  state = state || buildThemeState(getStoredThemeFamily(), getStoredAppearancePreference());
+
+  var themeButtons = document.querySelectorAll('[data-theme]');
+  themeButtons.forEach(function(btn) {
+    var active = btn.dataset.theme === state.themeFamily;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-checked', active ? 'true' : 'false');
+    btn.dataset.resolvedAppearance = state.resolvedAppearance;
   });
+
+  var appearanceButtons = document.querySelectorAll('[data-appearance]');
+  appearanceButtons.forEach(function(btn) {
+    var active = btn.dataset.appearance === state.appearancePreference;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-checked', active ? 'true' : 'false');
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    btn.dataset.resolvedAppearance = state.resolvedAppearance;
+  });
+}
+
+function applySystemThemeIfSelected() {
+  if (getStoredAppearancePreference() === 'auto') {
+    applyThemeState(getStoredThemeFamily(), 'auto', {
+      skipThemeStorage: true,
+      skipAppearanceStorage: true
+    });
+  }
+}
+
+function watchMediaQuery(query) {
+  if (!window.matchMedia) return;
+  var mq = window.matchMedia(query);
+  if (mq.addEventListener) mq.addEventListener('change', applySystemThemeIfSelected);
+  else if (mq.addListener) mq.addListener(applySystemThemeIfSelected);
+}
+
+function installSystemThemeListener() {
+  if (systemThemeListenerInstalled || typeof window === 'undefined') return;
+  systemThemeListenerInstalled = true;
+  watchMediaQuery('(prefers-color-scheme: light)');
+  watchMediaQuery('(prefers-color-scheme: dark)');
 }
 
 function refreshAllChartColors() {
@@ -1481,9 +1625,16 @@ function initThemeMenu() {
   });
 
   menu.addEventListener('click', function(e) {
-    var item = e.target.closest('[data-theme]');
-    if (!item) return;
-    applyTheme(item.dataset.theme);
+    var themeItem = e.target.closest('[data-theme]');
+    if (themeItem) {
+      applyTheme(themeItem.dataset.theme);
+      setThemeMenuOpen(false);
+      return;
+    }
+
+    var appearanceItem = e.target.closest('[data-appearance]');
+    if (!appearanceItem) return;
+    applyAppearancePreference(appearanceItem.dataset.appearance);
     setThemeMenuOpen(false);
   });
 }
@@ -1626,8 +1777,8 @@ function initDashboardGrid() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var savedTheme = localStorage.getItem('rudolph-theme') || 'oneui';
-  applyTheme(savedTheme);
+  applyThemeState(getStoredThemeFamily(), getStoredAppearancePreference());
+  installSystemThemeListener();
   initThemeMenu();
   initWidgetControls();
 
@@ -1668,6 +1819,7 @@ if (typeof module !== 'undefined' && module.exports) {
     buildIntradayDatasets: buildIntradayDatasets,
     buildStatsHtml: buildStatsHtml,
     buildHeaderPriceHtml: buildHeaderPriceHtml,
+    buildThemeState: buildThemeState,
     calculateCellHeight: calculateCellHeight,
     colorToRgba: colorToRgba,
     computeStats: computeStats,
@@ -1675,11 +1827,17 @@ if (typeof module !== 'undefined' && module.exports) {
     getClosedWidgetOptions: getClosedWidgetOptions,
     getOpenWidgetLayout: getOpenWidgetLayout,
     getSessionQuote: getSessionQuote,
+    getStoredAppearancePreference: getStoredAppearancePreference,
+    getStoredThemeFamily: getStoredThemeFamily,
+    getStoredThemePreference: getStoredThemePreference,
     hasPriceData: hasPriceData,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
     loadClosedWidgetIds: loadClosedWidgetIds,
+    resolveAppearanceMode: resolveAppearanceMode,
+    resolveThemeId: resolveThemeId,
     saveClosedWidgetIds: saveClosedWidgetIds,
-    splitIntradaySeries: splitIntradaySeries
+    splitIntradaySeries: splitIntradaySeries,
+    themeClassNameFor: themeClassNameFor
   };
 } else {
   initApp();

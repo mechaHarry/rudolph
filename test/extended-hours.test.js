@@ -282,3 +282,90 @@ test('getOpenWidgetLayout excludes closed widgets before grid startup', () => {
     ]
   );
 });
+
+test('resolveAppearanceMode follows the system light setting when preference is auto', () => {
+  const app = loadApp();
+
+  const resolved = app.resolveAppearanceMode('auto', {
+    matchMedia: (query) => ({ matches: query === '(prefers-color-scheme: light)' })
+  });
+
+  assert.equal(resolved, 'light');
+});
+
+test('resolveAppearanceMode follows the system dark setting when preference is auto', () => {
+  const app = loadApp();
+
+  const resolved = app.resolveAppearanceMode('auto', {
+    matchMedia: (query) => ({ matches: query === '(prefers-color-scheme: dark)' })
+  });
+
+  assert.equal(resolved, 'dark');
+});
+
+test('resolveThemeId keeps legacy system preference as automatic appearance', () => {
+  const app = loadApp();
+
+  assert.equal(app.resolveThemeId('system'), 'dark');
+});
+
+test('themeClassNameFor maps theme family and appearance to body classes', () => {
+  const app = loadApp();
+
+  assert.equal(app.themeClassNameFor('oneui', 'light'), 'theme-oneui mode-light');
+  assert.equal(app.themeClassNameFor('oneui', 'dark'), 'theme-oneui mode-dark');
+  assert.equal(app.themeClassNameFor('glass', 'light'), 'theme-glass mode-light');
+});
+
+test('buildThemeState keeps theme family independent from automatic light mode', () => {
+  const app = loadApp();
+
+  const state = app.buildThemeState('material', 'auto', {
+    matchMedia: (query) => ({ matches: query === '(prefers-color-scheme: light)' })
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(state)), {
+    themeFamily: 'material',
+    appearancePreference: 'auto',
+    resolvedAppearance: 'light',
+    className: 'theme-material mode-light'
+  });
+});
+
+test('buildThemeState keeps theme family independent from explicit dark mode', () => {
+  const app = loadApp();
+
+  const state = app.buildThemeState('glass', 'dark', {
+    matchMedia: (query) => ({ matches: query === '(prefers-color-scheme: light)' })
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(state)), {
+    themeFamily: 'glass',
+    appearancePreference: 'dark',
+    resolvedAppearance: 'dark',
+    className: 'theme-glass mode-dark'
+  });
+});
+
+test('getStoredAppearancePreference reads explicit appearance separately from theme family', () => {
+  const app = loadApp();
+  const storage = {
+    getItem: (key) => ({
+      'rudolph-theme': 'carbon',
+      'rudolph-appearance': 'light'
+    }[key] || null)
+  };
+
+  assert.equal(app.getStoredThemeFamily(storage), 'carbon');
+  assert.equal(app.getStoredAppearancePreference(storage), 'light');
+});
+
+test('getStoredAppearancePreference migrates previous light theme selection to explicit light', () => {
+  const app = loadApp();
+  const storage = {
+    getItem: (key) => key === 'rudolph-theme' ? 'light' : null
+  };
+
+  assert.equal(app.getStoredThemeFamily(storage), 'oneui');
+  assert.equal(app.getStoredAppearancePreference(storage), 'light');
+});
