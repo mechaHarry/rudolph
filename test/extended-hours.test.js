@@ -369,3 +369,18 @@ test('getStoredAppearancePreference migrates previous light theme selection to e
   assert.equal(app.getStoredThemeFamily(storage), 'oneui');
   assert.equal(app.getStoredAppearancePreference(storage), 'light');
 });
+
+test('theme menu selections keep the dropdown open after choosing a theme or appearance', () => {
+  const app = loadApp();
+  const themeTarget = {
+    closest: (selector) => selector === '[data-theme]' ? { dataset: { theme: 'webex' } } : null
+  };
+  const appearanceTarget = {
+    closest: (selector) => selector === '[data-appearance]' ? { dataset: { appearance: 'dark' } } : null
+  };
+  const emptyTarget = { closest: () => null };
+
+  assert.equal(app.isThemeMenuSelectionTarget(themeTarget), true);
+  assert.equal(app.isThemeMenuSelectionTarget(appearanceTarget), true);
+  assert.equal(app.isThemeMenuSelectionTarget(emptyTarget), false);
+});

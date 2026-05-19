@@ -1541,6 +1541,11 @@ function setThemeMenuOpen(open) {
   if (menu) menu.classList.toggle('open', open);
 }
 
+function isThemeMenuSelectionTarget(target) {
+  if (!target || typeof target.closest !== 'function') return false;
+  return !!(target.closest('[data-theme]') || target.closest('[data-appearance]'));
+}
+
 function closeWidget(id) {
   if (!dashGrid || !widgetExists(id)) return;
   var el = findWidgetElement(id);
@@ -1625,17 +1630,17 @@ function initThemeMenu() {
   });
 
   menu.addEventListener('click', function(e) {
+    if (!isThemeMenuSelectionTarget(e.target)) return;
+
     var themeItem = e.target.closest('[data-theme]');
     if (themeItem) {
       applyTheme(themeItem.dataset.theme);
-      setThemeMenuOpen(false);
       return;
     }
 
     var appearanceItem = e.target.closest('[data-appearance]');
     if (!appearanceItem) return;
     applyAppearancePreference(appearanceItem.dataset.appearance);
-    setThemeMenuOpen(false);
   });
 }
 
@@ -1831,6 +1836,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getStoredThemeFamily: getStoredThemeFamily,
     getStoredThemePreference: getStoredThemePreference,
     hasPriceData: hasPriceData,
+    isThemeMenuSelectionTarget: isThemeMenuSelectionTarget,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
     loadClosedWidgetIds: loadClosedWidgetIds,
     resolveAppearanceMode: resolveAppearanceMode,
