@@ -506,9 +506,22 @@ function positionTickerPanel() {
   var panel = $('ticker-panel');
   if (!btn || !panel) return;
   var r = btn.getBoundingClientRect();
-  panel.style.left = r.left + 'px';
+  var panelWidth = Math.max(r.width, 300);
+  var direction = chooseDropdownMenuDirection({
+    buttonLeft: r.left,
+    buttonRight: r.right,
+    menuWidth: panelWidth,
+    viewportWidth: window.innerWidth
+  });
+  panel.style.left = dropdownMenuLeftForDirection({
+    buttonLeft: r.left,
+    buttonRight: r.right,
+    menuWidth: panelWidth,
+    viewportWidth: window.innerWidth,
+    direction: direction
+  }) + 'px';
   panel.style.top = (r.bottom + 6) + 'px';
-  panel.style.minWidth = Math.max(r.width, 300) + 'px';
+  panel.style.minWidth = panelWidth + 'px';
 }
 
 function initTickerCombo() {
@@ -1695,14 +1708,92 @@ function renderWidgetMenu() {
   }).join('');
 }
 
+function chooseDropdownMenuDirection(metrics) {
+  var gutter = typeof metrics.gutter === 'number' ? metrics.gutter : 8;
+  var viewportWidth = Math.max(0, Number(metrics.viewportWidth) || 0);
+  var buttonLeft = Number(metrics.buttonLeft) || 0;
+  var buttonRight = Number(metrics.buttonRight) || buttonLeft;
+  var menuWidth = Math.max(0, Number(metrics.menuWidth) || 0);
+  if (!viewportWidth || !menuWidth) return 'left';
+
+  var rightOverflow = buttonLeft + menuWidth - (viewportWidth - gutter);
+  var leftOverflow = gutter - (buttonRight - menuWidth);
+  var rightFits = rightOverflow <= 0;
+  var leftFits = leftOverflow <= 0;
+
+  if (rightFits) return 'right';
+  if (leftFits) return 'left';
+  return rightOverflow <= leftOverflow ? 'right' : 'left';
+}
+
+function dropdownMenuLeftForDirection(metrics) {
+  var gutter = typeof metrics.gutter === 'number' ? metrics.gutter : 8;
+  var viewportWidth = Math.max(0, Number(metrics.viewportWidth) || 0);
+  var buttonLeft = Number(metrics.buttonLeft) || 0;
+  var buttonRight = Number(metrics.buttonRight) || buttonLeft;
+  var menuWidth = Math.max(0, Number(metrics.menuWidth) || 0);
+  var left = metrics.direction === 'left' ? buttonRight - menuWidth : buttonLeft;
+  if (!viewportWidth || !menuWidth) return Math.max(gutter, left);
+  return Math.max(gutter, Math.min(left, viewportWidth - menuWidth - gutter));
+}
+
+function setDropdownMenuDirection(menu, direction) {
+  if (!menu || !menu.classList) return;
+  menu.classList.remove('menu-open-left');
+  menu.classList.remove('menu-open-right');
+  menu.classList.add(direction === 'right' ? 'menu-open-right' : 'menu-open-left');
+}
+
+function positionAnchoredDropdownMenu(menu, button) {
+  if (!menu || !button || typeof button.getBoundingClientRect !== 'function') return;
+  var buttonRect = button.getBoundingClientRect();
+  var menuRect = typeof menu.getBoundingClientRect === 'function' ? menu.getBoundingClientRect() : { width: 0 };
+  var menuWidth = menuRect.width || menu.offsetWidth || 210;
+  setDropdownMenuDirection(menu, chooseDropdownMenuDirection({
+    buttonLeft: buttonRect.left,
+    buttonRight: buttonRect.right,
+    menuWidth: menuWidth,
+    viewportWidth: window.innerWidth
+  }));
+}
+
+function positionOpenDropdownMenus() {
+  var widgetMenu = $('widget-menu');
+  var themeMenu = $('theme-menu');
+  var tickerPanel = $('ticker-panel');
+  if (widgetMenu && widgetMenu.classList.contains('open')) {
+    positionAnchoredDropdownMenu(widgetMenu, $('add-widget-btn'));
+  }
+  if (themeMenu && themeMenu.classList.contains('open')) {
+    positionAnchoredDropdownMenu(themeMenu, $('theme-menu-btn'));
+  }
+  if (tickerPanel && tickerPanel.classList.contains('open')) {
+    positionTickerPanel();
+  }
+}
+
 function setWidgetMenuOpen(open) {
   var menu = $('widget-menu');
-  if (menu) menu.classList.toggle('open', open);
+  if (!menu) return;
+  menu.classList.toggle('open', open);
+  if (open) {
+    positionAnchoredDropdownMenu(menu, $('add-widget-btn'));
+  } else {
+    menu.classList.remove('menu-open-left');
+    menu.classList.remove('menu-open-right');
+  }
 }
 
 function setThemeMenuOpen(open) {
   var menu = $('theme-menu');
-  if (menu) menu.classList.toggle('open', open);
+  if (!menu) return;
+  menu.classList.toggle('open', open);
+  if (open) {
+    positionAnchoredDropdownMenu(menu, $('theme-menu-btn'));
+  } else {
+    menu.classList.remove('menu-open-left');
+    menu.classList.remove('menu-open-right');
+  }
 }
 
 function isThemeMenuSelectionTarget(target) {
@@ -1941,6 +2032,7 @@ function initDashboardGrid() {
   var resizeTimer;
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimer);
+    positionOpenDropdownMenus();
     resizeTimer = setTimeout(fitGridToViewport, 150);
   });
 }
@@ -2011,6 +2103,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fetchJsonWithBackoff: fetchJsonWithBackoff,
     hasPriceData: hasPriceData,
     isThemeMenuSelectionTarget: isThemeMenuSelectionTarget,
+    chooseDropdownMenuDirection: chooseDropdownMenuDirection,
     isRegularMarketTimestamp: isRegularMarketTimestamp,
     loadSavedTickers: loadSavedTickers,
     loadClosedWidgetIds: loadClosedWidgetIds,

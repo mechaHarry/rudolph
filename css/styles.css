@@ -703,6 +703,7 @@ header {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
+  left: auto;
   right: 0;
   min-width: 210px;
   background: var(--menu-bg, var(--surface-hi));
@@ -718,6 +719,18 @@ header {
 .theme-menu.open,
 .widget-menu.open {
   display: block;
+}
+
+.theme-menu.menu-open-right,
+.widget-menu.menu-open-right {
+  left: 0;
+  right: auto;
+}
+
+.theme-menu.menu-open-left,
+.widget-menu.menu-open-left {
+  left: auto;
+  right: 0;
 }
 
 .theme-menu button,
