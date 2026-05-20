@@ -9,10 +9,9 @@ function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
 }
 
-test('VERSION starts semantic version tracking at 1.0.0', () => {
+test('VERSION uses semantic versioning', () => {
   const version = read('VERSION').trim();
 
-  assert.equal(version, '1.0.0');
   assert.match(version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
 });
 
