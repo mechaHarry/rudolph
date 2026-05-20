@@ -508,6 +508,39 @@ test('theme menu selections keep the dropdown open after choosing a theme or app
   assert.equal(app.isThemeMenuSelectionTarget(emptyTarget), false);
 });
 
+test('dropdown menus open to the right when the right side fits in the viewport', () => {
+  const app = loadApp();
+
+  assert.equal(app.chooseDropdownMenuDirection({
+    buttonLeft: 24,
+    buttonRight: 64,
+    menuWidth: 210,
+    viewportWidth: 360
+  }), 'right');
+});
+
+test('dropdown menus open to the left when opening right would be cut off', () => {
+  const app = loadApp();
+
+  assert.equal(app.chooseDropdownMenuDirection({
+    buttonLeft: 250,
+    buttonRight: 290,
+    menuWidth: 210,
+    viewportWidth: 320
+  }), 'left');
+});
+
+test('dropdown menus choose the side with less clipping when neither side fully fits', () => {
+  const app = loadApp();
+
+  assert.equal(app.chooseDropdownMenuDirection({
+    buttonLeft: 128,
+    buttonRight: 168,
+    menuWidth: 260,
+    viewportWidth: 300
+  }), 'right');
+});
+
 test('theme menu labels the webex family as Cisco Momentum', () => {
   const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const newtabHtml = fs.readFileSync(path.join(__dirname, '..', 'newtab.html'), 'utf8');
