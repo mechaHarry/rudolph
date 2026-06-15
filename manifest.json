@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Rudolph",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Customizable new tab dashboard with live stock watchlists and market charts.",
   "icons": {
     "16": "icons/icon16.png",
