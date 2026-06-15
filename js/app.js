@@ -1831,6 +1831,7 @@ function addWidget(id) {
   dashGrid.addWidget(el, layout);
   var closed = loadClosedWidgetIds().filter(function(closedId) { return closedId !== id; });
   saveClosedWidgetIds(closed);
+  rebalanceOpenGridWidgets(dashGrid);
   renderWidgetMenu();
   setWidgetMenuOpen(false);
   saveGridLayout();
@@ -1935,6 +1936,65 @@ function allowGridInsertionOverflow(grid) {
   if (!grid || !grid.engine) return;
   if (grid.opts) grid.opts.maxRow = 0;
   grid.engine.maxRow = 0;
+}
+
+function buildBalancedWidgetLayout(widgetIds, rows) {
+  widgetIds = normalizeWidgetIds(widgetIds || []);
+  var count = widgetIds.length;
+  if (!count) return [];
+
+  var totalRows = Math.max(parseInt(rows, 10) || DEFAULT_GRID_ROWS, count);
+  var columns = count <= 3 ? count : Math.min(3, Math.ceil(Math.sqrt(count)));
+  var rowCount = Math.ceil(count / columns);
+  var baseRowHeight = Math.floor(totalRows / rowCount);
+  var extraRows = totalRows % rowCount;
+  var layout = [];
+  var widgetIndex = 0;
+  var y = 0;
+
+  for (var row = 0; row < rowCount; row++) {
+    var remaining = count - widgetIndex;
+    var itemsInRow = Math.min(columns, remaining);
+    var rowHeight = baseRowHeight + (row < extraRows ? 1 : 0);
+    var baseWidth = Math.floor(12 / itemsInRow);
+    var extraWidth = 12 % itemsInRow;
+    var x = 0;
+
+    for (var col = 0; col < itemsInRow; col++) {
+      var width = baseWidth + (col < extraWidth ? 1 : 0);
+      layout.push({
+        id: widgetIds[widgetIndex],
+        x: x,
+        y: y,
+        w: width,
+        h: rowHeight
+      });
+      x += width;
+      widgetIndex += 1;
+    }
+    y += rowHeight;
+  }
+
+  return layout;
+}
+
+function getOpenWidgetIdsFromGrid(grid) {
+  if (!grid || !grid.engine || !Array.isArray(grid.engine.nodes)) return [];
+  var present = {};
+  grid.engine.nodes.forEach(function(node) {
+    if (node && widgetExists(node.id)) present[node.id] = true;
+  });
+  return WIDGETS.map(function(widget) { return widget.id; }).filter(function(id) {
+    return present[id];
+  });
+}
+
+function rebalanceOpenGridWidgets(grid) {
+  if (!grid || typeof grid.load !== 'function') return;
+  var layout = buildBalancedWidgetLayout(getOpenWidgetIdsFromGrid(grid), DEFAULT_GRID_ROWS);
+  if (!layout.length) return;
+  allowGridInsertionOverflow(grid);
+  grid.load(layout, false);
 }
 
 function calculateCellHeight(availableHeight, rows) {
@@ -2092,6 +2152,7 @@ if (typeof module !== 'undefined' && module.exports) {
       fetchStateByProvider = {};
     },
     allowGridInsertionOverflow: allowGridInsertionOverflow,
+    buildBalancedWidgetLayout: buildBalancedWidgetLayout,
     buildGridOptions: buildGridOptions,
     buildIntradayDatasets: buildIntradayDatasets,
     buildStatsHtml: buildStatsHtml,
@@ -2116,6 +2177,7 @@ if (typeof module !== 'undefined' && module.exports) {
     isRegularMarketTimestamp: isRegularMarketTimestamp,
     loadSavedTickers: loadSavedTickers,
     loadClosedWidgetIds: loadClosedWidgetIds,
+    rebalanceOpenGridWidgets: rebalanceOpenGridWidgets,
     removeTickerFromList: removeTickerFromList,
     resolveAppearanceMode: resolveAppearanceMode,
     resolveThemeId: resolveThemeId,

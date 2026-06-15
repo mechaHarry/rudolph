@@ -440,6 +440,67 @@ test('reinserted widgets shift an expanded widget instead of overlapping it', ()
   ]);
 });
 
+test('balanced widget layout fills the viewport rows for four open widgets', () => {
+  const app = loadApp();
+
+  const layout = JSON.parse(JSON.stringify(
+    app.buildBalancedWidgetLayout(['hourly', 'month', 'year', 'alltime'], 9)
+  ));
+
+  assert.deepEqual(layout, [
+    { id: 'hourly', x: 0, y: 0, w: 6, h: 5 },
+    { id: 'month', x: 6, y: 0, w: 6, h: 5 },
+    { id: 'year', x: 0, y: 5, w: 6, h: 4 },
+    { id: 'alltime', x: 6, y: 5, w: 6, h: 4 }
+  ]);
+});
+
+test('balanced widget layout maxes five open widgets without empty row bands', () => {
+  const app = loadApp();
+
+  const layout = JSON.parse(JSON.stringify(
+    app.buildBalancedWidgetLayout(['hourly', 'stock', 'month', 'year', 'alltime'], 9)
+  ));
+
+  assert.deepEqual(layout, [
+    { id: 'hourly', x: 0, y: 0, w: 4, h: 5 },
+    { id: 'stock', x: 4, y: 0, w: 4, h: 5 },
+    { id: 'month', x: 8, y: 0, w: 4, h: 5 },
+    { id: 'year', x: 0, y: 5, w: 6, h: 4 },
+    { id: 'alltime', x: 6, y: 5, w: 6, h: 4 }
+  ]);
+});
+
+test('rebalanced open widgets load a dense layout in canonical widget order', () => {
+  const app = loadApp();
+  const calls = [];
+  const grid = {
+    engine: {
+      nodes: [
+        { id: 'alltime' },
+        { id: 'month' },
+        { id: 'hourly' },
+        { id: 'year' }
+      ]
+    },
+    load: function(layout, addRemove) {
+      calls.push({ layout, addRemove });
+    }
+  };
+
+  app.rebalanceOpenGridWidgets(grid);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [{
+    addRemove: false,
+    layout: [
+      { id: 'hourly', x: 0, y: 0, w: 6, h: 5 },
+      { id: 'month', x: 6, y: 0, w: 6, h: 5 },
+      { id: 'year', x: 0, y: 5, w: 6, h: 4 },
+      { id: 'alltime', x: 6, y: 5, w: 6, h: 4 }
+    ]
+  }]);
+});
+
 test('resolveAppearanceMode follows the system light setting when preference is auto', () => {
   const app = loadApp();
 
