@@ -1825,8 +1825,10 @@ function addWidget(id) {
   if (!dashGrid || !widgetExists(id)) return;
   var el = findWidgetElement(id);
   if (!el) return;
+  var layout = storedLayoutFor(id);
+  allowGridInsertionOverflow(dashGrid);
   el.classList.remove('widget-hidden');
-  dashGrid.addWidget(el, storedLayoutFor(id));
+  dashGrid.addWidget(el, layout);
   var closed = loadClosedWidgetIds().filter(function(closedId) { return closedId !== id; });
   saveClosedWidgetIds(closed);
   renderWidgetMenu();
@@ -1927,6 +1929,12 @@ function getMaxRow(layout) {
   var max = 0;
   layout.forEach(function(n) { max = Math.max(max, (n.y || 0) + (n.h || 1)); });
   return Math.max(max || DEFAULT_GRID_ROWS, DEFAULT_GRID_ROWS);
+}
+
+function allowGridInsertionOverflow(grid) {
+  if (!grid || !grid.engine) return;
+  if (grid.opts) grid.opts.maxRow = 0;
+  grid.engine.maxRow = 0;
 }
 
 function calculateCellHeight(availableHeight, rows) {
@@ -2083,6 +2091,7 @@ if (typeof module !== 'undefined' && module.exports) {
       waitImpl = wait;
       fetchStateByProvider = {};
     },
+    allowGridInsertionOverflow: allowGridInsertionOverflow,
     buildGridOptions: buildGridOptions,
     buildIntradayDatasets: buildIntradayDatasets,
     buildStatsHtml: buildStatsHtml,

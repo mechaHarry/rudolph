@@ -77,6 +77,47 @@ function loadApp() {
   return context.module.exports;
 }
 
+function loadGridStackEngine() {
+  global.self = global;
+  return require(path.join(__dirname, '..', 'js', 'gridstack.min.js')).Engine;
+}
+
+function buildExpandedHourGrid(Engine, maxRow) {
+  const engine = new Engine({ column: 12, maxRow, float: true, nodes: [] });
+  engine.addNode({ id: 'hourly', x: 0, y: 0, w: 12, h: 6 });
+  engine.addNode({ id: 'year', x: 0, y: 6, w: 6, h: 3 });
+  engine.addNode({ id: 'alltime', x: 6, y: 6, w: 6, h: 3 });
+  return engine;
+}
+
+function gridNodeRects(engine) {
+  return engine.nodes.map((node) => ({
+    id: node.id,
+    x: node.x,
+    y: node.y,
+    w: node.w,
+    h: node.h
+  })).sort((a, b) => a.y - b.y || a.x - b.x || a.id.localeCompare(b.id));
+}
+
+function gridOverlaps(nodes) {
+  const pairs = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const overlaps = !(
+        a.y >= b.y + b.h ||
+        a.y + a.h <= b.y ||
+        a.x + a.w <= b.x ||
+        a.x >= b.x + b.w
+      );
+      if (overlaps) pairs.push([a.id, b.id]);
+    }
+  }
+  return pairs;
+}
+
 function cssRuleBlock(css, selector) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = css.match(new RegExp(escaped + '\\s*\\{([\\s\\S]*?)\\n\\}'));
@@ -360,6 +401,43 @@ test('getOpenWidgetLayout excludes closed widgets before grid startup', () => {
       { id: 'alltime', x: 0, y: 6, w: 12, h: 3 }
     ]
   );
+});
+
+test('reinserted widgets temporarily remove the grid row cap before collision resolution', () => {
+  const app = loadApp();
+  const grid = {
+    opts: { maxRow: 9 },
+    engine: { maxRow: 9 }
+  };
+
+  app.allowGridInsertionOverflow(grid);
+
+  assert.equal(grid.opts.maxRow, 0);
+  assert.equal(grid.engine.maxRow, 0);
+});
+
+test('reinserted widgets shift an expanded widget instead of overlapping it', () => {
+  const app = loadApp();
+  const Engine = loadGridStackEngine();
+  const cappedEngine = buildExpandedHourGrid(Engine, 9);
+  cappedEngine.addNode({ id: 'month', x: 6, y: 3, w: 6, h: 3 });
+  assert.notDeepEqual(gridOverlaps(gridNodeRects(cappedEngine)), []);
+
+  const grid = {
+    opts: { maxRow: 9 },
+    engine: buildExpandedHourGrid(Engine, 9)
+  };
+  app.allowGridInsertionOverflow(grid);
+  grid.engine.addNode({ id: 'month', x: 6, y: 3, w: 6, h: 3 });
+
+  const nodes = gridNodeRects(grid.engine);
+  assert.deepEqual(gridOverlaps(nodes), []);
+  assert.deepEqual(nodes, [
+    { id: 'month', x: 6, y: 3, w: 6, h: 3 },
+    { id: 'hourly', x: 0, y: 6, w: 12, h: 6 },
+    { id: 'year', x: 0, y: 12, w: 6, h: 3 },
+    { id: 'alltime', x: 6, y: 12, w: 6, h: 3 }
+  ]);
 });
 
 test('resolveAppearanceMode follows the system light setting when preference is auto', () => {
